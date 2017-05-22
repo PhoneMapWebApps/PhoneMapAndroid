@@ -1,13 +1,14 @@
 package com.phonemap.phonemap;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
-import org.json.JSONException;
+import com.phonemap.phonemap.services.Controller;
+
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
 
@@ -20,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         final MicroService.EventListener readyListener = new MicroService.EventListener() {
             @Override
             public void onEvent(MicroService service, String event, JSONObject payload) {
@@ -60,5 +61,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         };
+
+        startService(new Intent(this, Controller.class));
     }
 }
