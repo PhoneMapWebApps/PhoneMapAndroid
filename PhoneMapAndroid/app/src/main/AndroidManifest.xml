@@ -17,6 +17,7 @@
         </activity>
 
         <service android:enabled="true" android:name=".services.Controller" />
+        <service android:enabled="true" android:name=".services.JSRunner" />
     </application>
 
 </manifest>
