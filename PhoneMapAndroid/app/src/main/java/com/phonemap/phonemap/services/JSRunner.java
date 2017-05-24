@@ -35,7 +35,7 @@ public class JSRunner extends Service {
         }
     };
 
-    private final MicroService.ServiceStartListener mainListener = new MicroService.ServiceStartListener() {
+    private final MicroService.ServiceStartListener startListener = new MicroService.ServiceStartListener() {
         @Override
         public void onStart(MicroService service) {
             service.addEventListener("ready", readyListener);
@@ -43,7 +43,20 @@ public class JSRunner extends Service {
         }
     };
 
-    @Override
+    private final MicroService.ServiceErrorListener errorListener = new MicroService.ServiceErrorListener() {
+        @Override
+        public void onError(MicroService service, Exception e) {
+            // Handle errors
+        }
+    };
+
+    private final MicroService.ServiceExitListener exitListener = new MicroService.ServiceExitListener() {
+        @Override
+        public void onExit(MicroService service, Integer exitCode) {
+            // Handle finish of execution
+        }
+    };
+
     public int onStartCommand(Intent intent, int flags, int startId) {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SHUTDOWN);
@@ -55,7 +68,9 @@ public class JSRunner extends Service {
             service = new MicroService(
                     getApplicationContext(),
                     new URI("android.resource://com.phonemap.phonemap/raw/" + R.raw.test),
-                    mainListener
+                    startListener,
+                    errorListener,
+                    exitListener
             );
             service.start();
         } catch (URISyntaxException e) {
