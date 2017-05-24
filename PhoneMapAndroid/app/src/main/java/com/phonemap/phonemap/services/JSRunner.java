@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.phonemap.phonemap.R;
+import com.phonemap.phonemap.wrappers.IntentFilterBuilder;
 
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
@@ -17,9 +18,52 @@ import org.liquidplayer.service.MicroService;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-
 public class JSRunner extends Service {
     private MicroService service;
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        IntentFilter filter = new IntentFilterBuilder()
+                .withAction(Intent.ACTION_SHUTDOWN)
+                .withAction(Intent.ACTION_SCREEN_ON)
+                .withAction(Intent.ACTION_POWER_DISCONNECTED).build();
+
+        BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                service.emit("onShutdown");
+            }
+        };
+
+        registerReceiver(shutdownReceiver, filter);
+
+        try {
+            startMicroService();
+        } catch (URISyntaxException e) {
+            System.err.println("Failed to start service! Telling server to put job somewhere else...");
+            // Handle error by reporting back to the server that there is a problem with this phone and to try another one.
+            e.printStackTrace();
+        }
+
+        return Service.START_STICKY;
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    private void startMicroService() throws URISyntaxException {
+        service = new MicroService(
+                getApplicationContext(),
+                new URI("android.resource://com.phonemap.phonemap/raw/" + R.raw.test),
+                startListener,
+                errorListener,
+                exitListener
+        );
+        service.start();
+    }
 
     private final MicroService.EventListener readyListener = new MicroService.EventListener() {
         @Override
@@ -56,40 +100,4 @@ public class JSRunner extends Service {
             // Handle finish of execution
         }
     };
-
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SHUTDOWN);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-        registerReceiver(shutdownReceiver, filter);
-
-        try {
-            service = new MicroService(
-                    getApplicationContext(),
-                    new URI("android.resource://com.phonemap.phonemap/raw/" + R.raw.test),
-                    startListener,
-                    errorListener,
-                    exitListener
-            );
-            service.start();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        return Service.START_STICKY;
-    }
-
-    BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            service.emit("onShutdown");
-        }
-    };
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 }
