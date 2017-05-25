@@ -13,10 +13,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+
 public class Controller extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        WebserverListener webserverListener = new WebserverListener();
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder().url("http://146.169.45.121:5000").build();
+
+        client.newWebSocket(request, webserverListener);
+
         startService(new Intent(getApplicationContext(), JSRunner.class));
+        client.dispatcher().executorService().shutdown();
         return Service.START_NOT_STICKY;
     }
 
