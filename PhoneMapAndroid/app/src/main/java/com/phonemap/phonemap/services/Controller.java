@@ -2,32 +2,83 @@ package com.phonemap.phonemap.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.EmbossMaskFilter;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
-import com.phonemap.phonemap.wrappers.HttpURLConnectionBuilder;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 public class Controller extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        WebserverListener webserverListener = new WebserverListener();
-        OkHttpClient client = new OkHttpClient();
+        try {
+            final Socket socket = IO.socket("http://146.169.45.121:5000/test");
 
-        Request request = new Request.Builder().url("http://146.169.45.121:5000").build();
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("LOG", "Connected");
+                    JSONObject object = new JSONObject();
+                    try {
+                        object.put("data", "Sup");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    socket.emit("my_broadcast_event", object);
+                    socket.emit("my_broadcast_event", object);
+                }
+            });
 
-        client.newWebSocket(request, webserverListener);
+            socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("LOG", "Disconnected");
+                }
+            });
+
+            socket.on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("LOG", String.valueOf(args.length));
+                }
+            });
+
+            socket.on(Socket.EVENT_ERROR, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("LOG", "We fucked up");
+                    Log.i("LOG", String.valueOf(args.length));
+                    Log.i("LOG", String.valueOf(args[0]));
+                }
+            });
+
+            socket.on(Socket.EVENT_PING, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i("LOG", "Ping");
+                }
+            });
+
+            socket.connect();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
 
         startService(new Intent(getApplicationContext(), JSRunner.class));
-        client.dispatcher().executorService().shutdown();
         return Service.START_NOT_STICKY;
     }
 
@@ -37,18 +88,30 @@ public class Controller extends Service {
         return null;
     }
 
-    void downloadFile(String url, String outputFileName) throws IOException {
-        HttpURLConnection urlConnection = new HttpURLConnectionBuilder(url).setRequestMethod("GET").setDoOutput(true).connect();
+    void downloadFile(String urlPath, String filename){
+        try {
+            URL url = new URL(urlPath);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setDoOutput(true);
+            urlConnection.connect();
 
-        File outputFile = new File(getApplicationContext().getFilesDir(), outputFileName);
-        FileOutputStream fileOutput = new FileOutputStream(outputFile);
-        InputStream inputStream = urlConnection.getInputStream();
+            File file = new File(getApplicationContext().getFilesDir(), filename);
 
-        byte[] buffer = new byte[1024];
-        int bufferLength;
-        while ((bufferLength = inputStream.read(buffer)) > 0) {
-            fileOutput.write(buffer, 0, bufferLength);
+            FileOutputStream fileOutput = new FileOutputStream(file);
+
+            InputStream inputStream = urlConnection.getInputStream();
+
+            byte[] buffer = new byte[1024];
+            int bufferLength;
+
+            while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+                fileOutput.write(buffer, 0, bufferLength);
+            }
+
+            fileOutput.close();
+        } catch (final IOException e) {
+            e.printStackTrace();
         }
-        fileOutput.close();
     }
 }
