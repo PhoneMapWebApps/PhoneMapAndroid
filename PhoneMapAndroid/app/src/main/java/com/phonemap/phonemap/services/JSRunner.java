@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.phonemap.phonemap.R;
+import com.phonemap.phonemap.wrappers.AndroidLog;
 import com.phonemap.phonemap.wrappers.IntentFilterBuilder;
 
 import org.json.JSONObject;
@@ -75,7 +76,7 @@ public class JSRunner extends Service {
     private final MicroService.EventListener returnListener = new MicroService.EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
-            Log.i("LOG", payload.toString());
+            Log.i(AndroidLog.INFO, payload.toString());
             service.getProcess().exit(0);
         }
     };
