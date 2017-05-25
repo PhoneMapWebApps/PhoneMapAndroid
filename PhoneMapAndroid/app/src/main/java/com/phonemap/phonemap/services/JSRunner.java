@@ -28,13 +28,6 @@ public class JSRunner extends Service {
                 .withAction(Intent.ACTION_SCREEN_ON)
                 .withAction(Intent.ACTION_POWER_DISCONNECTED).build();
 
-        BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                service.emit("onShutdown");
-            }
-        };
-
         registerReceiver(shutdownReceiver, filter);
 
         try {
@@ -65,6 +58,13 @@ public class JSRunner extends Service {
         service.start();
     }
 
+    private final BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            service.emit("onShutdown");
+        }
+    };
+
     private final MicroService.EventListener readyListener = new MicroService.EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
@@ -76,6 +76,7 @@ public class JSRunner extends Service {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             Log.i("LOG", payload.toString());
+            service.getProcess().exit(0);
         }
     };
 
