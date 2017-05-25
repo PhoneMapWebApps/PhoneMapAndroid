@@ -10,8 +10,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.phonemap.phonemap.R;
-import com.phonemap.phonemap.wrappers.AndroidLog;
-import com.phonemap.phonemap.wrappers.IntentFilterBuilder;
 
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
@@ -21,13 +19,14 @@ import java.net.URISyntaxException;
 
 public class JSRunner extends Service {
     private MicroService service;
+    private static String LOG_TAG = "JS_RUNNER";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        IntentFilter filter = new IntentFilterBuilder()
-                .withAction(Intent.ACTION_SHUTDOWN)
-                .withAction(Intent.ACTION_SCREEN_ON)
-                .withAction(Intent.ACTION_POWER_DISCONNECTED).build();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SHUTDOWN);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
 
         registerReceiver(shutdownReceiver, filter);
 
@@ -76,7 +75,7 @@ public class JSRunner extends Service {
     private final MicroService.EventListener returnListener = new MicroService.EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
-            Log.i(AndroidLog.INFO, payload.toString());
+            Log.i(LOG_TAG, payload.toString());
             service.getProcess().exit(0);
         }
     };

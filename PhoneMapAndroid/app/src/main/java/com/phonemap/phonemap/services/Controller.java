@@ -2,7 +2,6 @@ package com.phonemap.phonemap.services;
 
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.EmbossMaskFilter;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -23,6 +22,8 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class Controller extends Service {
+    private static String LOG_TAG =  "SOCKET_IO";
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
@@ -31,7 +32,7 @@ public class Controller extends Service {
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.i("LOG", "Connected");
+                    Log.i(LOG_TAG, "Connected");
                     JSONObject object = new JSONObject();
                     try {
                         object.put("data", "Sup");
@@ -46,30 +47,30 @@ public class Controller extends Service {
             socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.i("LOG", "Disconnected");
+                    Log.i(LOG_TAG, "Disconnected");
                 }
             });
 
             socket.on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.i("LOG", String.valueOf(args.length));
+                    Log.i(LOG_TAG, String.valueOf(args.length));
                 }
             });
 
             socket.on(Socket.EVENT_ERROR, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.i("LOG", "We fucked up");
-                    Log.i("LOG", String.valueOf(args.length));
-                    Log.i("LOG", String.valueOf(args[0]));
+                    Log.i(LOG_TAG, "We fucked up");
+                    Log.i(LOG_TAG, String.valueOf(args.length));
+                    Log.i(LOG_TAG, String.valueOf(args[0]));
                 }
             });
 
             socket.on(Socket.EVENT_PING, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.i("LOG", "Ping");
+                    Log.i(LOG_TAG, "Ping");
                 }
             });
 
