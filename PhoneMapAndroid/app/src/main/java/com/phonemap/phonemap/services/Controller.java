@@ -6,26 +6,29 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.net.URISyntaxException;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 import static com.phonemap.phonemap.constants.Server.WS_URL;
+import static com.phonemap.phonemap.constants.Sockets.CODE;
+import static com.phonemap.phonemap.constants.Sockets.DATA;
+import static com.phonemap.phonemap.constants.Sockets.GET_CODE;
+import static com.phonemap.phonemap.constants.Sockets.ID;
+import static com.phonemap.phonemap.constants.Sockets.SET_CODE;
+import static com.phonemap.phonemap.constants.Sockets.SET_ID;
 
 public class Controller extends Service {
     private static String LOG_TAG = "SOCKET_IO";
+    private int id;
+    private Socket socket;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final Socket socket;
         try {
             socket = IO.socket(WS_URL);
         } catch (URISyntaxException e) {
@@ -34,10 +37,12 @@ public class Controller extends Service {
             return START_NOT_STICKY;
         }
 
-        socket.on(Socket.EVENT_CONNECT, connect);
-        socket.on(Socket.EVENT_DISCONNECT, disconnect);
-        socket.on(Socket.EVENT_MESSAGE, message);
-        socket.on(Socket.EVENT_ERROR, error);
+        socket.on(Socket.EVENT_CONNECT, connectListener);
+        socket.on(Socket.EVENT_DISCONNECT, disconnectListenerListener);
+        socket.on(Socket.EVENT_ERROR, errorListener);
+
+        socket.on(SET_ID, setIdListener);
+        socket.on(SET_CODE, setCodeListener);
 
         socket.connect();
 
@@ -51,60 +56,64 @@ public class Controller extends Service {
         return null;
     }
 
-    private final Emitter.Listener connect = new Emitter.Listener() {
+    private final Emitter.Listener connectListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.i(LOG_TAG, "Connected");
         }
     };
 
-    private final Emitter.Listener disconnect = new Emitter.Listener() {
+    private final Emitter.Listener disconnectListenerListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.i(LOG_TAG, "Disconnected");
         }
     };
 
-    private final Emitter.Listener message = new Emitter.Listener() {
+    private final Emitter.Listener errorListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, String.valueOf(args.length));
+            Log.e(LOG_TAG, "Socket error occurred:");
+            printArgs(args);
         }
     };
 
-    private final Emitter.Listener error = new Emitter.Listener() {
+    private final Emitter.Listener setIdListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "We fucked up");
-            Log.i(LOG_TAG, String.valueOf(args.length));
-            Log.i(LOG_TAG, String.valueOf(args[0]));
-        }
-    };
-
-    private void downloadFile(String urlPath, String filename) {
-        try {
-            URL url = new URL(urlPath);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setDoOutput(true);
-            urlConnection.connect();
-
-            File file = new File(getApplicationContext().getFilesDir(), filename);
-
-            FileOutputStream fileOutput = new FileOutputStream(file);
-
-            InputStream inputStream = urlConnection.getInputStream();
-
-            byte[] buffer = new byte[1024];
-            int bufferLength;
-
-            while ((bufferLength = inputStream.read(buffer)) > 0) {
-                fileOutput.write(buffer, 0, bufferLength);
+            try {
+                JSONObject message = (JSONObject) args[1];
+                id = message.getInt(ID);
+                socket.emit(GET_CODE);
+            } catch (JSONException e) {
+                exitOnBadArgs(SET_ID, args);
             }
+        }
+    };
 
-            fileOutput.close();
-        } catch (final IOException e) {
-            e.printStackTrace();
+    private final Emitter.Listener setCodeListener = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            try {
+                JSONObject message = (JSONObject) args[0];
+                //ToDo: Save code, start service and pass data to it
+                message.getString(CODE);
+                message.getString(DATA);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    private void exitOnBadArgs(String event, Object... args) {
+        Log.e(LOG_TAG, "Malformed args for event:" + event);
+        printArgs(args);
+        stopSelf();
+    }
+
+    private void printArgs(Object... args) {
+        for (Object arg : args) {
+            Log.e(LOG_TAG, String.valueOf(arg));
         }
     }
 }
