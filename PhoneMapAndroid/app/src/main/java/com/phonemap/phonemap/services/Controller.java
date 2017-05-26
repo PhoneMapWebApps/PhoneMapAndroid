@@ -22,7 +22,7 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class Controller extends Service {
-    private static String LOG_TAG =  "SOCKET_IO";
+    private static String LOG_TAG = "SOCKET_IO";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -89,7 +89,7 @@ public class Controller extends Service {
         return null;
     }
 
-    void downloadFile(String urlPath, String filename){
+    void downloadFile(String urlPath, String filename) {
         try {
             URL url = new URL(urlPath);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -106,7 +106,7 @@ public class Controller extends Service {
             byte[] buffer = new byte[1024];
             int bufferLength;
 
-            while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+            while ((bufferLength = inputStream.read(buffer)) > 0) {
                 fileOutput.write(buffer, 0, bufferLength);
             }
 
