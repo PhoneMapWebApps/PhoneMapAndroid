@@ -6,9 +6,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,63 +18,28 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
+import static com.phonemap.phonemap.constants.Server.WS_URL;
+
 public class Controller extends Service {
     private static String LOG_TAG = "SOCKET_IO";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        final Socket socket;
         try {
-            final Socket socket = IO.socket("http://146.169.45.121:5000/test");
-
-            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(LOG_TAG, "Connected");
-                    JSONObject object = new JSONObject();
-                    try {
-                        object.put("data", "Sup");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    socket.emit("my_broadcast_event", object);
-                    socket.emit("my_broadcast_event", object);
-                }
-            });
-
-            socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(LOG_TAG, "Disconnected");
-                }
-            });
-
-            socket.on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(LOG_TAG, String.valueOf(args.length));
-                }
-            });
-
-            socket.on(Socket.EVENT_ERROR, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(LOG_TAG, "We fucked up");
-                    Log.i(LOG_TAG, String.valueOf(args.length));
-                    Log.i(LOG_TAG, String.valueOf(args[0]));
-                }
-            });
-
-            socket.on(Socket.EVENT_PING, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(LOG_TAG, "Ping");
-                }
-            });
-
-            socket.connect();
+            socket = IO.socket(WS_URL);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, "Invalid URI");
+            stopSelf();
+            return START_NOT_STICKY;
         }
+
+        socket.on(Socket.EVENT_CONNECT, connect);
+        socket.on(Socket.EVENT_DISCONNECT, disconnect);
+        socket.on(Socket.EVENT_MESSAGE, message);
+        socket.on(Socket.EVENT_ERROR, error);
+
+        socket.connect();
 
         startService(new Intent(getApplicationContext(), JSRunner.class));
         return Service.START_NOT_STICKY;
@@ -89,7 +51,37 @@ public class Controller extends Service {
         return null;
     }
 
-    void downloadFile(String urlPath, String filename) {
+    private final Emitter.Listener connect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, "Connected");
+        }
+    };
+
+    private final Emitter.Listener disconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, "Disconnected");
+        }
+    };
+
+    private final Emitter.Listener message = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, String.valueOf(args.length));
+        }
+    };
+
+    private final Emitter.Listener error = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, "We fucked up");
+            Log.i(LOG_TAG, String.valueOf(args.length));
+            Log.i(LOG_TAG, String.valueOf(args[0]));
+        }
+    };
+
+    private void downloadFile(String urlPath, String filename) {
         try {
             URL url = new URL(urlPath);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
