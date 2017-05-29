@@ -30,9 +30,12 @@ import static com.phonemap.phonemap.constants.Server.WS_URL;
 import static com.phonemap.phonemap.constants.Sockets.CODE;
 import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
+import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
 import static com.phonemap.phonemap.constants.Sockets.GET_CODE;
 import static com.phonemap.phonemap.constants.Sockets.ID;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
+import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
+import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
 import static com.phonemap.phonemap.constants.Sockets.SET_CODE;
 import static com.phonemap.phonemap.constants.Sockets.SET_ID;
 
@@ -49,7 +52,16 @@ public class ConnectionManager extends Service {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case CONNECT_AND_RETURN_DATA:
+                    Log.i(LOG_TAG, "Got connect message");
                     connectAndReturnData(msg.replyTo);
+                    break;
+                case RETURN_RESULTS:
+                    Log.i(LOG_TAG, "Got return message");
+                    //ToDo: Implement returning data to server
+                    break;
+                case FAILED_EXECUTING_CODE:
+                    Log.i(LOG_TAG, "Got failed to execute message");
+                    //ToDo: Implement returning errors to server
                     break;
                 default:
                     super.handleMessage(msg);
@@ -88,7 +100,7 @@ public class ConnectionManager extends Service {
     private void returnCodeAndData(Messenger messenger) throws InterruptedException, RemoteException {
         Bundle bundle = toProcess.take();
 
-        Message msg = Message.obtain(null, CONNECT_AND_RETURN_DATA);
+        Message msg = Message.obtain(null, RETURN_DATA);
         msg.setData(bundle);
         messenger.send(msg);
     }
@@ -145,6 +157,7 @@ public class ConnectionManager extends Service {
         @Override
         public void call(Object... args) {
             try {
+                Log.i(LOG_TAG, "Got code");
                 JSONObject message = (JSONObject) args[0];
                 String code = message.getString(CODE);
                 String data = message.getString(DATA);

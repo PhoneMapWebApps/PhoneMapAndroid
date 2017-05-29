@@ -13,8 +13,13 @@ public class Sockets {
     public static final String CODE = "code";
     public static final String DATA = "data";
     public static final String PATH = "path";
+    public static final String EXCEPTION = "exception";
 
     //Message Handler
     public static final int CONNECT_AND_RETURN_DATA = 0;
+    public static final int RETURN_RESULTS = 1;
+    public static final int RETURN_DATA = 2;
+
+    public static final int FAILED_EXECUTING_CODE = 400;
 
 }

@@ -29,7 +29,10 @@ import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
 import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
+import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
+import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
+import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
 
 public class JSRunner extends Service {
     private static String LOG_TAG = "JSRunner";
@@ -45,7 +48,7 @@ public class JSRunner extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case CONNECT_AND_RETURN_DATA:
+                case RETURN_DATA:
                     startMicroService(msg.getData());
                     break;
                 default:
@@ -81,7 +84,6 @@ public class JSRunner extends Service {
             bound = false;
         }
     };
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -143,7 +145,18 @@ public class JSRunner extends Service {
     private final MicroService.EventListener returnListener = new MicroService.EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
-            Log.i(LOG_TAG, payload.toString());
+            Bundle bundle = new Bundle();
+            bundle.putString(RETURN, payload.toString());
+
+            Message msg = Message.obtain(null, RETURN_RESULTS);
+            msg.setData(bundle);
+
+            try {
+                messenger.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
             service.getProcess().exit(0);
         }
     };
@@ -160,7 +173,18 @@ public class JSRunner extends Service {
         @Override
         public void onError(MicroService service, Exception e) {
             Log.e(LOG_TAG, "Error occurred within MicroService");
-            Log.e(LOG_TAG, String.valueOf(e));
+
+            Bundle bundle = new Bundle();
+            bundle.putString(EXCEPTION, String.valueOf(e));
+
+            Message msg = new Message();
+            msg.setData(bundle);
+
+            try {
+                messenger.send(msg);
+            } catch (RemoteException e1) {
+                e1.printStackTrace();
+            }
         }
     };
 
