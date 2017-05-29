@@ -12,4 +12,5 @@ public class Sockets {
     public static final String ID = "id";
     public static final String CODE = "code";
     public static final String DATA = "data";
+    public static final String PATH = "path";
 }
