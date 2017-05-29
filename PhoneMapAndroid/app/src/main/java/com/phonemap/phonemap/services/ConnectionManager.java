@@ -50,7 +50,7 @@ public class ConnectionManager extends Service {
                     socket.emit(SOCKET_RETURN, bundleToJSON(msg.getData()));
                     break;
                 case FAILED_EXECUTING_CODE:
-                    socket.emit(SOCKET_EXECUTION_FAILED, bundleToJSON(msg.getData()));
+                    socket.emit(SOCKET_FAILED_EXECUTING, bundleToJSON(msg.getData()));
                     break;
                 default:
                     super.handleMessage(msg);
