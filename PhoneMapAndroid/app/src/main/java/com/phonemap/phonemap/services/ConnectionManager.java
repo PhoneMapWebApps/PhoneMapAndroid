@@ -147,7 +147,7 @@ public class ConnectionManager extends Service {
                 try {
                     path = writeToFile(code, "code.js", getApplicationContext());
                 } catch (IOException e) {
-                    Log.e(LOG_TAG ,"Could not create or write to code.js");
+                    Log.e(LOG_TAG ,"Could not create or write to code.js\n(" + e.toString() + ")");
                     stopSelf();
                     return;
                 }
@@ -180,7 +180,7 @@ public class ConnectionManager extends Service {
         File path = context.getFilesDir();
         File file = new File(path, filename);
 
-        if (!file.exists() || !file.delete()) {
+        if ((file.exists() && !file.delete())) {
             throw new IOException("Failed to delete old file");
         }
 
