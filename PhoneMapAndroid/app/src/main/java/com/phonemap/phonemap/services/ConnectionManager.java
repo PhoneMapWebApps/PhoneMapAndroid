@@ -78,7 +78,7 @@ public class ConnectionManager extends Service {
 
         try {
             Bundle bundle = toProcess.take();
-            new MessengerSender(CONNECT_AND_RETURN_DATA).setData(bundle).send(messenger);
+            new MessengerSender(RETURN_DATA).setData(bundle).send(messenger);
         } catch (InterruptedException e) {
             e.printStackTrace();
             //ToDo: Tell server that we failed to process the task

@@ -74,17 +74,7 @@ public class JSRunner extends Service {
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messenger = new Messenger(service);
-
-            Message msg = Message.obtain(null, CONNECT_AND_RETURN_DATA);
-            msg.replyTo = response;
-
-            try {
-                messenger.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-
-            new MessengerSender(RETURN_RESULTS).replyTo(response).send(messenger);
+            new MessengerSender(CONNECT_AND_RETURN_DATA).replyTo(response).send(messenger);
         }
 
         public void onServiceDisconnected(ComponentName className) {
