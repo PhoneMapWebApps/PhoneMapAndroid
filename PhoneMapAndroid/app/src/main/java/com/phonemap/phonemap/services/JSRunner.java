@@ -16,6 +16,8 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.phonemap.phonemap.wrapper.MessengerSender;
+
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
 
@@ -42,7 +44,6 @@ public class JSRunner extends Service {
     private MicroService service;
     private Messenger messenger = null;
     private Messenger response = new Messenger(new MessageHandler());
-    private boolean bound;
 
 
     class MessageHandler extends Handler {
@@ -64,10 +65,14 @@ public class JSRunner extends Service {
         bindService(new Intent(this, ConnectionManager.class), connection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    public void onDestroy() {
+        unbindService(connection);
+    }
+
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messenger = new Messenger(service);
-            bound = true;
 
             Message msg = Message.obtain(null, CONNECT_AND_RETURN_DATA);
             msg.replyTo = response;
@@ -77,12 +82,13 @@ public class JSRunner extends Service {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+
+            new MessengerSender(RETURN_RESULTS).replyTo(response).send(messenger);
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            //ToDo: Handle disconnect
-            service = null;
-            bound = false;
+            Log.e(LOG_TAG, "ConnectionManager stopped unexpectedly.");
+            stopSelf();
         }
     };
 
@@ -116,8 +122,6 @@ public class JSRunner extends Service {
     }
 
     private void startMicroService(String path) throws URISyntaxException {
-        // Test file: "android.resource://com.phonemap.phonemap/raw/" + R.raw.test
-
         service = new MicroService(
                 getApplicationContext(),
                 convertPathToURI(path),
@@ -149,14 +153,7 @@ public class JSRunner extends Service {
             Bundle bundle = new Bundle();
             bundle.putString(RETURN, payload.toString());
 
-            Message msg = Message.obtain(null, RETURN_RESULTS);
-            msg.setData(bundle);
-
-            try {
-                messenger.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            new MessengerSender(RETURN_RESULTS).setData(bundle).send(messenger);
 
             service.getProcess().exit(0);
         }
@@ -178,14 +175,7 @@ public class JSRunner extends Service {
             Bundle bundle = new Bundle();
             bundle.putString(EXCEPTION, String.valueOf(e));
 
-            Message msg = Message.obtain(null, FAILED_EXECUTING_CODE);
-            msg.setData(bundle);
-
-            try {
-                messenger.send(msg);
-            } catch (RemoteException e1) {
-                e1.printStackTrace();
-            }
+            new MessengerSender(FAILED_EXECUTING_CODE).setData(bundle).send(messenger);
         }
     };
 

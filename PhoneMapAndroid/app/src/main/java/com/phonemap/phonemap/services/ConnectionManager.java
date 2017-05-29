@@ -12,6 +12,8 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.phonemap.phonemap.wrapper.MessengerSender;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,7 +54,6 @@ public class ConnectionManager extends Service {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case CONNECT_AND_RETURN_DATA:
-                    Log.i(LOG_TAG, "Got connect message");
                     connectAndReturnData(msg.replyTo);
                     break;
                 case RETURN_RESULTS:
@@ -88,21 +89,12 @@ public class ConnectionManager extends Service {
         socket.connect();
 
         try {
-            returnCodeAndData(messenger);
-        } catch (InterruptedException | RemoteException e) {
-            Log.e(LOG_TAG, "Failed to return code and data");
+            Bundle bundle = toProcess.take();
+            new MessengerSender(RETURN_DATA).setData(bundle).send(messenger);
+        } catch (InterruptedException e) {
             e.printStackTrace();
-            stopSelf();
-            //ToDo: Better error handling
+            //ToDo: Tell server that we failed to process the task
         }
-    }
-
-    private void returnCodeAndData(Messenger messenger) throws InterruptedException, RemoteException {
-        Bundle bundle = toProcess.take();
-
-        Message msg = Message.obtain(null, RETURN_DATA);
-        msg.setData(bundle);
-        messenger.send(msg);
     }
 
     @Nullable
@@ -137,6 +129,7 @@ public class ConnectionManager extends Service {
         @Override
         public void call(Object... args) {
             Log.e(LOG_TAG, "Could not connect to server");
+            printArgs(args);
         }
     };
 
