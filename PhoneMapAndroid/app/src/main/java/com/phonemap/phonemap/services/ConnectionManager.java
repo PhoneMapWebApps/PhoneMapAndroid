@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -28,18 +27,10 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
+import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Server.WS_URL;
-import static com.phonemap.phonemap.constants.Sockets.CODE;
-import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
-import static com.phonemap.phonemap.constants.Sockets.DATA;
-import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
-import static com.phonemap.phonemap.constants.Sockets.GET_CODE;
-import static com.phonemap.phonemap.constants.Sockets.ID;
-import static com.phonemap.phonemap.constants.Sockets.PATH;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
-import static com.phonemap.phonemap.constants.Sockets.SET_CODE;
-import static com.phonemap.phonemap.constants.Sockets.SET_ID;
+import static com.phonemap.phonemap.constants.Sockets.*;
+import static com.phonemap.phonemap.utils.Utils.bundleToJSON;
 
 public class ConnectionManager extends Service {
     private static String LOG_TAG = "ConnectionManager";
@@ -57,12 +48,10 @@ public class ConnectionManager extends Service {
                     connectAndReturnData(msg.replyTo);
                     break;
                 case RETURN_RESULTS:
-                    Log.i(LOG_TAG, "Got return message");
-                    //ToDo: Implement returning data to server
+                    socket.emit(SOCKET_RETURN, bundleToJSON(msg.getData()));
                     break;
                 case FAILED_EXECUTING_CODE:
-                    Log.i(LOG_TAG, "Got failed to execute message");
-                    //ToDo: Implement returning errors to server
+                    socket.emit(SOCKET_RETURN, bundleToJSON(msg.getData()));
                     break;
                 default:
                     super.handleMessage(msg);
@@ -83,14 +72,14 @@ public class ConnectionManager extends Service {
         socket.on(Socket.EVENT_ERROR, errorListener);
         socket.on(Socket.EVENT_CONNECT_ERROR, connectErrorListener);
 
-        socket.on(SET_ID, setIdListener);
-        socket.on(SET_CODE, setCodeListener);
+        socket.on(SOCKET_SET_ID, setIdListener);
+        socket.on(SOCKET_SET_CODE, setCodeListener);
 
         socket.connect();
 
         try {
             Bundle bundle = toProcess.take();
-            new MessengerSender(RETURN_DATA).setData(bundle).send(messenger);
+            new MessengerSender(CONNECT_AND_RETURN_DATA).setData(bundle).send(messenger);
         } catch (InterruptedException e) {
             e.printStackTrace();
             //ToDo: Tell server that we failed to process the task
@@ -139,9 +128,9 @@ public class ConnectionManager extends Service {
             try {
                 JSONObject message = (JSONObject) args[1];
                 id = message.getInt(ID);
-                socket.emit(GET_CODE);
+                socket.emit(SOCKET_GET_CODE);
             } catch (JSONException e) {
-                exitOnBadArgs(SET_ID, args);
+                exitOnBadArgs(SOCKET_SET_ID, args);
             }
         }
     };
@@ -161,6 +150,7 @@ public class ConnectionManager extends Service {
                 } catch (IOException e) {
                     Log.e(LOG_TAG ,"Could not create or write to code.js");
                     stopSelf();
+                    return;
                 }
 
                 Bundle bundle = new Bundle();
@@ -169,7 +159,7 @@ public class ConnectionManager extends Service {
 
                 toProcess.add(bundle);
             } catch (JSONException e) {
-                exitOnBadArgs(SET_CODE, args);
+                exitOnBadArgs(SOCKET_SET_CODE, args);
             }
         }
     };

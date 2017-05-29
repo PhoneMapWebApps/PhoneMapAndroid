@@ -67,6 +67,7 @@ public class JSRunner extends Service {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         unbindService(connection);
     }
 
