@@ -5,23 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
-import com.phonemap.phonemap.services.Controller;
+import com.phonemap.phonemap.services.JSRunner;
 
 public class MainActivity extends AppCompatActivity {
-    private final String LOG_TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.i(LOG_TAG, "Started Main");
-
-        if (!isServiceRunning(Controller.class)) {
-            Log.i(LOG_TAG, "Starting Controller");
-            startService(new Intent(this, Controller.class));
+        if (!isServiceRunning(JSRunner.class)) {
+            startService(new Intent(this, JSRunner.class));
         }
     }
 

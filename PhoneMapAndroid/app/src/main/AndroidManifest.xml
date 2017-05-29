@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
 
-        <service android:enabled="true" android:name=".services.Controller" />
+        <service android:enabled="true" android:name=".services.ConnectionManager" />
         <service android:enabled="true" android:name=".services.JSRunner" />
     </application>
 

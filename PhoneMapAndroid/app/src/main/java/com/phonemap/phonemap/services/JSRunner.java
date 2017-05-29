@@ -2,14 +2,19 @@ package com.phonemap.phonemap.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
-
-import com.phonemap.phonemap.R;
 
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
@@ -26,10 +31,56 @@ import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 
 public class JSRunner extends Service {
-    private MicroService service;
     private static String LOG_TAG = "JSRunner";
 
-    public String data;
+    private String data;
+    private MicroService service;
+    private Messenger messenger = null;
+    private Messenger response = new Messenger(new MessageHandler());
+    private boolean bound;
+
+
+    class MessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    startMicroService(msg.getData());
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        bindService(new Intent(this, ConnectionManager.class), connection, Context.BIND_AUTO_CREATE);
+    }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            messenger = new Messenger(service);
+            bound = true;
+
+            Message msg = Message.obtain(null, 0);
+            msg.replyTo = response;
+
+            try {
+                messenger.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            //ToDo: Handle disconnect
+            service = null;
+            bound = false;
+        }
+    };
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -40,17 +91,6 @@ public class JSRunner extends Service {
 
         registerReceiver(shutdownReceiver, filter);
 
-        String path = intent.getStringExtra(PATH);
-        this.data = intent.getStringExtra(DATA);
-
-        try {
-            startMicroService(path);
-        } catch (URISyntaxException e) {
-            Log.e(LOG_TAG, "Failed to start service! Telling server to put job somewhere else...");
-            // ToDo: Handle error by reporting back to the server that there is a problem with this phone and to try another one.
-            e.printStackTrace();
-        }
-
         return Service.START_STICKY;
     }
 
@@ -58,6 +98,17 @@ public class JSRunner extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void startMicroService(Bundle bundle) {
+        data = bundle.getString(DATA);
+
+        try {
+            startMicroService(bundle.getString(PATH));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Invalid URI, could not start MicroService");
+        }
     }
 
     private void startMicroService(String path) throws URISyntaxException {
@@ -70,6 +121,7 @@ public class JSRunner extends Service {
                 errorListener,
                 exitListener
         );
+
         service.start();
     }
 

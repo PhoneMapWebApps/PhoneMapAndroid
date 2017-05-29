@@ -3,7 +3,12 @@ package com.phonemap.phonemap.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -14,6 +19,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -27,21 +35,33 @@ import static com.phonemap.phonemap.constants.Sockets.PATH;
 import static com.phonemap.phonemap.constants.Sockets.SET_CODE;
 import static com.phonemap.phonemap.constants.Sockets.SET_ID;
 
-public class Controller extends Service {
-    private static String LOG_TAG = "Controller";
+public class ConnectionManager extends Service {
+    private static String LOG_TAG = "ConnectionManager";
     private int id;
     private Socket socket;
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(LOG_TAG, "Started Controller");
+    private final Messenger messenger = new Messenger(new MessageHandler());
+    private final BlockingQueue<Bundle> toProcess = new LinkedBlockingQueue<>();
 
+    class MessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    connectAndReturnData(msg.replyTo);
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+
+    public void connectAndReturnData(Messenger messenger) {
         try {
             socket = IO.socket(WS_URL);
         } catch (URISyntaxException e) {
             Log.e(LOG_TAG, "Invalid URI");
             stopSelf();
-            return START_NOT_STICKY;
         }
 
         socket.on(Socket.EVENT_CONNECT, connectListener);
@@ -52,17 +72,30 @@ public class Controller extends Service {
         socket.on(SET_ID, setIdListener);
         socket.on(SET_CODE, setCodeListener);
 
-        Log.i(LOG_TAG, "Starting Socket");
-
         socket.connect();
 
-        return Service.START_NOT_STICKY;
+        try {
+            returnCodeAndData(messenger);
+        } catch (InterruptedException | RemoteException e) {
+            Log.e(LOG_TAG, "Failed to return code and data");
+            e.printStackTrace();
+            stopSelf();
+            //ToDo: Better error handling
+        }
+    }
+
+    private void returnCodeAndData(Messenger messenger) throws InterruptedException, RemoteException {
+        Bundle bundle = toProcess.take();
+
+        Message msg = Message.obtain(null, 0);
+        msg.setData(bundle);
+        messenger.send(msg);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return messenger.getBinder();
     }
 
     private final Emitter.Listener connectListener = new Emitter.Listener() {
@@ -87,7 +120,7 @@ public class Controller extends Service {
         }
     };
 
-    private final  Emitter.Listener connectErrorListener = new Emitter.Listener() {
+    private final Emitter.Listener connectErrorListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.e(LOG_TAG, "Could not connect to server");
@@ -123,13 +156,11 @@ public class Controller extends Service {
                     stopSelf();
                 }
 
-                Intent intent = new Intent(getApplicationContext(), JSRunner.class);
-                intent.putExtra(PATH, path);
-                intent.putExtra(DATA, data);
+                Bundle bundle = new Bundle();
+                bundle.putString(PATH, path);
+                bundle.putString(DATA, data);
 
-                Log.i(LOG_TAG, "Starting service");
-
-                startService(intent);
+                toProcess.add(bundle);
             } catch (JSONException e) {
                 exitOnBadArgs(SET_CODE, args);
             }
