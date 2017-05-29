@@ -14,7 +14,7 @@ public class Utils {
     public static JSONObject bundleToJSON(Bundle bundle) {
         JSONObject json = new JSONObject();
 
-        if (bundle == null) {
+        if (bundle == null || !bundle.isEmpty()) {
             return json;
         }
 
