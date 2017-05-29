@@ -30,6 +30,7 @@ import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
 import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
+import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
@@ -177,7 +178,7 @@ public class JSRunner extends Service {
             Bundle bundle = new Bundle();
             bundle.putString(EXCEPTION, String.valueOf(e));
 
-            Message msg = new Message();
+            Message msg = Message.obtain(null, FAILED_EXECUTING_CODE);
             msg.setData(bundle);
 
             try {
