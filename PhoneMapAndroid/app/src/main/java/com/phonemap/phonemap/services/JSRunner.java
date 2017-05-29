@@ -27,6 +27,7 @@ import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
+import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 
@@ -44,7 +45,7 @@ public class JSRunner extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
+                case CONNECT_AND_RETURN_DATA:
                     startMicroService(msg.getData());
                     break;
                 default:
@@ -64,7 +65,7 @@ public class JSRunner extends Service {
             messenger = new Messenger(service);
             bound = true;
 
-            Message msg = Message.obtain(null, 0);
+            Message msg = Message.obtain(null, CONNECT_AND_RETURN_DATA);
             msg.replyTo = response;
 
             try {

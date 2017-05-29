@@ -13,4 +13,8 @@ public class Sockets {
     public static final String CODE = "code";
     public static final String DATA = "data";
     public static final String PATH = "path";
+
+    //Message Handler
+    public static final int CONNECT_AND_RETURN_DATA = 0;
+
 }

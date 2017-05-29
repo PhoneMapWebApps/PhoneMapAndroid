@@ -28,6 +28,7 @@ import io.socket.emitter.Emitter;
 
 import static com.phonemap.phonemap.constants.Server.WS_URL;
 import static com.phonemap.phonemap.constants.Sockets.CODE;
+import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.GET_CODE;
 import static com.phonemap.phonemap.constants.Sockets.ID;
@@ -47,7 +48,7 @@ public class ConnectionManager extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
+                case CONNECT_AND_RETURN_DATA:
                     connectAndReturnData(msg.replyTo);
                     break;
                 default:
@@ -87,7 +88,7 @@ public class ConnectionManager extends Service {
     private void returnCodeAndData(Messenger messenger) throws InterruptedException, RemoteException {
         Bundle bundle = toProcess.take();
 
-        Message msg = Message.obtain(null, 0);
+        Message msg = Message.obtain(null, CONNECT_AND_RETURN_DATA);
         msg.setData(bundle);
         messenger.send(msg);
     }
