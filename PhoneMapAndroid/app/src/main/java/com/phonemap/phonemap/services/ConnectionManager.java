@@ -27,7 +27,6 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Server.WS_URL;
 import static com.phonemap.phonemap.constants.Sockets.*;
 import static com.phonemap.phonemap.utils.Utils.bundleToJSON;
