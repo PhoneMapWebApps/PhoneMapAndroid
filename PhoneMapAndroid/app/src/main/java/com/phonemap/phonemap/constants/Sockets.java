@@ -9,7 +9,7 @@ public class Sockets {
 
     //Outgoing events
     public static final String SOCKET_GET_CODE = "get_code";
-    public static final String SOCKET_EXECUTION_FAILED = "execution_failed";
+    public static final String SOCKET_FAILED_EXECUTING = "execution_failed";
     public static final String SOCKET_RETURN = RETURN;
 
     //Parameters
