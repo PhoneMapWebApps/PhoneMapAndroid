@@ -21,6 +21,8 @@ import com.phonemap.phonemap.wrapper.MessengerSender;
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -164,7 +166,10 @@ public class JSRunner extends Service {
             Log.e(LOG_TAG, "Error occurred within MicroService");
 
             Bundle bundle = new Bundle();
-            bundle.putString(EXCEPTION, String.valueOf(e));
+
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            bundle.putString(EXCEPTION, sw.toString());
 
             new MessengerSender(FAILED_EXECUTING_CODE).setData(bundle).send(messenger);
         }
