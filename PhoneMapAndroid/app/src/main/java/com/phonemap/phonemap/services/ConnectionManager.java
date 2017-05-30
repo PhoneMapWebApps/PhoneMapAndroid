@@ -20,7 +20,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -44,8 +43,8 @@ public class ConnectionManager extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case CONNECT_AND_RETURN_DATA:
-                    connectAndReturnData(msg.replyTo);
+                case RETURN_DATA:
+                    returnDataAndCode(msg.replyTo);
                     break;
                 case RETURN_RESULTS:
                     socket.emit(SOCKET_RETURN, bundleToJSON(msg.getData()));
@@ -65,6 +64,7 @@ public class ConnectionManager extends Service {
 
     public ConnectionManager(Socket socket) {
         setupSocketOnEvents(socket);
+        socket.connect();
         this.socket = socket;
     }
 
@@ -78,12 +78,10 @@ public class ConnectionManager extends Service {
         socket.on(SOCKET_SET_CODE, setCodeListener);
     }
 
-    public void connectAndReturnData(Messenger messenger) {
-        socket.connect();
-
+    public void returnDataAndCode(Messenger messenger) {
         try {
             Bundle bundle = toProcess.take();
-            new MessengerSender(RETURN_DATA).setData(bundle).send(messenger);
+            new MessengerSender(RETURN_DATA_AND_CODE).setData(bundle).send(messenger);
         } catch (InterruptedException e) {
             e.printStackTrace();
             //ToDo: Tell server that we failed to process the task
@@ -96,21 +94,21 @@ public class ConnectionManager extends Service {
         return messenger.getBinder();
     }
 
-    private final Emitter.Listener connectListener = new Emitter.Listener() {
+    final Emitter.Listener connectListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.i(LOG_TAG, "Connected");
         }
     };
 
-    private final Emitter.Listener disconnectListenerListener = new Emitter.Listener() {
+    final Emitter.Listener disconnectListenerListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.i(LOG_TAG, "Disconnected");
         }
     };
 
-    private final Emitter.Listener errorListener = new Emitter.Listener() {
+    final Emitter.Listener errorListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.e(LOG_TAG, "Socket error occurred:");
@@ -118,7 +116,7 @@ public class ConnectionManager extends Service {
         }
     };
 
-    private final Emitter.Listener connectErrorListener = new Emitter.Listener() {
+    final Emitter.Listener connectErrorListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             Log.e(LOG_TAG, "Could not connect to server");
@@ -126,12 +124,13 @@ public class ConnectionManager extends Service {
         }
     };
 
-    private final Emitter.Listener setIdListener = new Emitter.Listener() {
+    final Emitter.Listener setIdListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             try {
-                JSONObject message = (JSONObject) args[1];
+                JSONObject message = (JSONObject) args[args.length - 1];
                 id = message.getInt(ID);
+
                 socket.emit(SOCKET_GET_CODE);
             } catch (JSONException e) {
                 exitOnBadArgs(SOCKET_SET_ID, args);
@@ -139,21 +138,20 @@ public class ConnectionManager extends Service {
         }
     };
 
-    private final Emitter.Listener setCodeListener = new Emitter.Listener() {
+    final Emitter.Listener setCodeListener = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             try {
-                Log.i(LOG_TAG, "Got code");
-                JSONObject message = (JSONObject) args[0];
+                JSONObject message = (JSONObject) args[args.length - 1];
                 String code = message.getString(CODE);
                 String data = message.getString(DATA);
 
                 String path = null;
+
                 try {
                     path = writeToFile(code, "code.js", getApplicationContext());
                 } catch (IOException e) {
                     Log.e(LOG_TAG ,"Could not create or write to code.js\n(" + e.toString() + ")");
-                    stopSelf();
                     return;
                 }
 
@@ -171,12 +169,13 @@ public class ConnectionManager extends Service {
     private void exitOnBadArgs(String event, Object... args) {
         Log.e(LOG_TAG, "Malformed args for event:" + event);
         printArgs(args);
-        stopSelf();
     }
 
     private void printArgs(Object... args) {
+        int i = 0;
         for (Object arg : args) {
-            Log.e(LOG_TAG, String.valueOf(arg));
+            Log.e(LOG_TAG, String.valueOf(i) + ": " + String.valueOf(arg));
+            i++;
         }
     }
 
@@ -185,7 +184,7 @@ public class ConnectionManager extends Service {
         File path = context.getFilesDir();
         File file = new File(path, filename);
 
-        if ((file.exists() && !file.delete())) {
+        if (file.exists() && !file.delete()) {
             throw new IOException("Failed to delete old file");
         }
 

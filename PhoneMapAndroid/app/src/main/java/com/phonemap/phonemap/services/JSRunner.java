@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -31,12 +30,12 @@ import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
-import static com.phonemap.phonemap.constants.Sockets.CONNECT_AND_RETURN_DATA;
+import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
+import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA_AND_CODE;
 import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
 
 public class JSRunner extends Service {
@@ -52,7 +51,7 @@ public class JSRunner extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case RETURN_DATA:
+                case RETURN_DATA_AND_CODE:
                     startMicroService(msg.getData());
                     break;
                 default:
@@ -76,7 +75,7 @@ public class JSRunner extends Service {
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messenger = new Messenger(service);
-            new MessengerSender(CONNECT_AND_RETURN_DATA).replyTo(response).send(messenger);
+            new MessengerSender(RETURN_DATA).replyTo(response).send(messenger);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -182,7 +181,7 @@ public class JSRunner extends Service {
         }
     };
 
-    private URI convertPathToURI(String path) throws URISyntaxException {
+    URI convertPathToURI(String path) throws URISyntaxException {
         return new URI(FILE_PREFIX + path);
     }
 }
