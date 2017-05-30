@@ -11,6 +11,7 @@ import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.phonemap.phonemap.constants.Sockets;
 import com.phonemap.phonemap.wrapper.MessengerSender;
 
 import org.json.JSONException;
@@ -27,7 +28,7 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-import static com.phonemap.phonemap.constants.Server.WS_URL;
+import static com.phonemap.phonemap.constants.Server.WS_URI;
 import static com.phonemap.phonemap.constants.Sockets.*;
 import static com.phonemap.phonemap.utils.Utils.bundleToJSON;
 
@@ -58,14 +59,16 @@ public class ConnectionManager extends Service {
         }
     }
 
-    public void connectAndReturnData(Messenger messenger) {
-        try {
-            socket = IO.socket(WS_URL);
-        } catch (URISyntaxException e) {
-            Log.e(LOG_TAG, "Invalid URI");
-            stopSelf();
-        }
+    public ConnectionManager() {
+        this(IO.socket(WS_URI));
+    }
 
+    public ConnectionManager(Socket socket) {
+        setupSocketOnEvents(socket);
+        this.socket = socket;
+    }
+
+    public void setupSocketOnEvents(Socket socket) {
         socket.on(Socket.EVENT_CONNECT, connectListener);
         socket.on(Socket.EVENT_DISCONNECT, disconnectListenerListener);
         socket.on(Socket.EVENT_ERROR, errorListener);
@@ -73,7 +76,9 @@ public class ConnectionManager extends Service {
 
         socket.on(SOCKET_SET_ID, setIdListener);
         socket.on(SOCKET_SET_CODE, setCodeListener);
+    }
 
+    public void connectAndReturnData(Messenger messenger) {
         socket.connect();
 
         try {

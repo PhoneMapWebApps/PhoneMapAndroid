@@ -1,8 +1,6 @@
 package com.phonemap.phonemap.utils;
 
 import android.os.Bundle;
-import android.os.SystemClock;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
