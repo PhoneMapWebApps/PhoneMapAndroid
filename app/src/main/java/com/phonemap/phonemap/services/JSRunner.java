@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.phonemap.phonemap.wrapper.MessengerSender;
@@ -29,6 +30,7 @@ import static com.phonemap.phonemap.constants.API.ON_DESTROY;
 import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
+import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
@@ -63,12 +65,24 @@ public class JSRunner extends Service {
     public void onCreate() {
         super.onCreate();
         bindService(new Intent(this, ConnectionManager.class), connection, Context.BIND_AUTO_CREATE);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SHUTDOWN);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+
+        registerReceiver(shutdownReceiver, filter);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         unbindService(connection);
+
+        Intent intent = new Intent(JSRUNNER_STOP_INTENT);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        unregisterReceiver(shutdownReceiver);
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -85,13 +99,6 @@ public class JSRunner extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SHUTDOWN);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-
-        registerReceiver(shutdownReceiver, filter);
-
         return Service.START_STICKY;
     }
 
