@@ -32,10 +32,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(JSRUNNER_STOP_INTENT);
-        filter.addAction(JSRUNNER_STARTED_INTENT);
-        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
+        registerIntentFilter();
 
         settings = getSharedPreferences(PREFERENCES, 0);
         boolean automatically = settings.getBoolean(RUN_AUTOMATICALLY, false);
@@ -58,6 +55,13 @@ public class MainActivity extends AppCompatActivity {
         if (checked) {
             startService(new Intent(this, JSRunner.class));
         }
+    }
+
+    private void registerIntentFilter() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(JSRUNNER_STOP_INTENT);
+        filter.addAction(JSRUNNER_STARTED_INTENT);
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }
 
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
