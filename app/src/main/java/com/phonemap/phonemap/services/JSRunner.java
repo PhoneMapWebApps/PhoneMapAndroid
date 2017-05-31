@@ -30,6 +30,7 @@ import static com.phonemap.phonemap.constants.API.ON_DESTROY;
 import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
+import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
@@ -129,12 +130,20 @@ public class JSRunner extends Service {
         );
 
         service.start();
+
+        Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private final BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            service.emit(ON_DESTROY);
+            if (intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
+                service.emit(ON_DESTROY, true);
+            } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)
+                    || intent.getAction().equals(Intent.ACTION_POWER_DISCONNECTED)) {
+                service.emit(ON_DESTROY, false);
+            }
         }
     };
 

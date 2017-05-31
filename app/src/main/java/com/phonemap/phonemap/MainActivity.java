@@ -18,6 +18,7 @@ import com.phonemap.phonemap.services.JSRunner;
 import java.text.DateFormat;
 import java.util.Date;
 
+import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 import static com.phonemap.phonemap.constants.Preferences.RUN_AUTOMATICALLY;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(JSRUNNER_STOP_INTENT);
+        filter.addAction(JSRUNNER_STARTED_INTENT);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
 
         settings = getSharedPreferences(PREFERENCES, 0);
@@ -40,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
         CheckBox checkbox = (CheckBox) findViewById(R.id.checkBox);
         checkbox.setChecked(automatically);
 
-        changeServiceState(automatically);
+        if (automatically) {
+            startService(new Intent(this, JSRunner.class));
+        }
     }
 
     public void onStartClick(View v) {
@@ -51,26 +55,9 @@ public class MainActivity extends AppCompatActivity {
         editor.putBoolean(RUN_AUTOMATICALLY, checked);
         editor.apply();
 
-        changeServiceState(checked);
-    }
-
-    private void changeServiceState(boolean start) {
-        if (start) {
-            if (!isServiceRunning(JSRunner.class)) {
-                startService(new Intent(this, JSRunner.class));
-                logStatus("Running");
-            }
+        if (checked) {
+            startService(new Intent(this, JSRunner.class));
         }
-    }
-
-    private boolean isServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
@@ -78,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
                 logStatus("Stopped");
+            } else if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
+                logStatus("Started");
             }
         }
     };
