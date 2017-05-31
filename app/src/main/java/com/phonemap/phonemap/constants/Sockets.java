@@ -20,9 +20,8 @@ public class Sockets {
     public static final String EXCEPTION = "exception";
 
     //Message Handler
-    public static final int RETURN_DATA = 0;
+    public static final int RETURN_DATA_AND_CODE = 0;
     public static final int RETURN_RESULTS = 1;
-    public static final int RETURN_DATA_AND_CODE = 2;
 
     public static final int FAILED_EXECUTING_CODE = 400;
 

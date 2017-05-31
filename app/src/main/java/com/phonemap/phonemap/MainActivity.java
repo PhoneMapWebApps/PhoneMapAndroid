@@ -5,6 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.phonemap.phonemap.services.JSRunner;
 
@@ -14,9 +18,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
+    public void onStartClick(View v) {
         if (!isServiceRunning(JSRunner.class)) {
             startService(new Intent(this, JSRunner.class));
+            setStatus("Running");
+            setButton("Stop");
         }
     }
 
@@ -28,5 +36,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    private void setStatus(String status) {
+        final TextView textView = (TextView) findViewById(R.id.textView);
+        textView.setText("Status: " + status);
+    }
+
+    private void setButton(String text) {
+        final Button button = (Button) findViewById(R.id.button);
+        button.setText(text);
     }
 }

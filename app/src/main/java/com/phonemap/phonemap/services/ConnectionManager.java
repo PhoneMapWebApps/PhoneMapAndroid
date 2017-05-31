@@ -43,7 +43,7 @@ public class ConnectionManager extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case RETURN_DATA:
+                case RETURN_DATA_AND_CODE:
                     returnDataAndCode(msg.replyTo);
                     break;
                 case RETURN_RESULTS:

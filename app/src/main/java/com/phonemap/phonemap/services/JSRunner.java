@@ -30,7 +30,6 @@ import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
@@ -75,7 +74,7 @@ public class JSRunner extends Service {
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messenger = new Messenger(service);
-            new MessengerSender(RETURN_DATA).replyTo(response).send(messenger);
+            new MessengerSender(RETURN_DATA_AND_CODE).replyTo(response).send(messenger);
         }
 
         public void onServiceDisconnected(ComponentName className) {
