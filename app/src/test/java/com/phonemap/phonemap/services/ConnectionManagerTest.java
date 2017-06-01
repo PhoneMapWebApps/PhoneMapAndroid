@@ -48,23 +48,4 @@ public class ConnectionManagerTest {
         verify(socket, times(2)).connect();
         verify(socket, atLeast(1)).on(stringCaptor.capture(), listenerCaptor.capture());
     }
-
-    @Test
-    public void testSetIDListenerHandlesCorrectJSON() throws JSONException {
-        JSONObject id = new JSONObject();
-        id.put("id", 0);
-
-        manager.setIdListener.call(id);
-
-        verify(socket, times(1)).emit(SOCKET_GET_CODE);
-    }
-
-    @Test
-    public void testSetIDListenerDoesNotProceedOnEmptyJSON() throws JSONException {
-        JSONObject id = new JSONObject();
-
-        manager.setIdListener.call(id);
-
-        verify(socket, times(0)).emit(SOCKET_GET_CODE);
-    }
 }
