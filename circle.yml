@@ -26,5 +26,6 @@ deployment:
   develop:
     branch: master
     commands:
+      - ./gradlew assemble
       - chmod +x ./deploy.sh
       - ./deploy.sh
