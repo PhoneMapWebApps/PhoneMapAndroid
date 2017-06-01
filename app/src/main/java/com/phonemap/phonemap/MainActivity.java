@@ -1,6 +1,8 @@
 package com.phonemap.phonemap;
 
-import android.app.ActivityManager;
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +44,26 @@ public class MainActivity extends AppCompatActivity {
         if (automatically) {
             startService(new Intent(this, JSRunner.class));
         }
+
+        checkForUpdates();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkForCrashes();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterManagers();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterManagers();
     }
 
     public void onStartClick(View v) {
@@ -82,5 +104,19 @@ public class MainActivity extends AppCompatActivity {
         String log = currentDateTimeString + ": " + status + "\n" + textView.getText();
 
         textView.setText(log);
+    }
+
+
+    private void checkForCrashes() {
+        CrashManager.register(this);
+    }
+
+    private void checkForUpdates() {
+        // Remove this for store builds!
+        UpdateManager.register(this);
+    }
+
+    private void unregisterManagers() {
+        UpdateManager.unregister();
     }
 }
