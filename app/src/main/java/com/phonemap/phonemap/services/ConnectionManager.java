@@ -48,6 +48,7 @@ public class ConnectionManager extends Service {
                     break;
                 case RETURN_RESULTS:
                     emitSocketWithID(SOCKET_RETURN, bundleToJSON(msg.getData()));
+                    emitSocketWithID(SOCKET_GET_CODE);
                     break;
                 case FAILED_EXECUTING_CODE:
                     emitSocketWithID(SOCKET_FAILED_EXECUTING, bundleToJSON(msg.getData()));
@@ -207,7 +208,7 @@ public class ConnectionManager extends Service {
 
     private void emitSocketWithID(String tag, JSONObject object) {
         object = signWithID(object);
-        Log.i(LOG_TAG, String.valueOf(object));
+        Log.i(LOG_TAG, "Tag: " + tag + " Payload: " + String.valueOf(object));
         socket.emit(tag, object);
     }
 }

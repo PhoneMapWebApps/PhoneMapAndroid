@@ -163,6 +163,8 @@ public class JSRunner extends Service {
             new MessengerSender(RETURN_RESULTS).setData(bundle).send(messenger);
 
             service.getProcess().exit(0);
+
+            new MessengerSender(RETURN_DATA_AND_CODE).replyTo(response).send(messenger);
         }
     };
 
