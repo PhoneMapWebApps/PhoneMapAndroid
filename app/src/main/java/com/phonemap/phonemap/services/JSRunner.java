@@ -89,7 +89,7 @@ public class JSRunner extends Service {
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messenger = new Messenger(service);
-            new MessengerSender(RETURN_DATA_AND_CODE).replyTo(response).send(messenger);
+            getDataAndCode();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -164,7 +164,7 @@ public class JSRunner extends Service {
 
             service.getProcess().exit(0);
 
-            new MessengerSender(RETURN_DATA_AND_CODE).replyTo(response).send(messenger);
+            getDataAndCode();
         }
     };
 
@@ -188,6 +188,7 @@ public class JSRunner extends Service {
             bundle.putString(EXCEPTION, sw.toString());
 
             new MessengerSender(FAILED_EXECUTING_CODE).setData(bundle).send(messenger);
+            getDataAndCode();
         }
     };
 
@@ -197,6 +198,10 @@ public class JSRunner extends Service {
             Log.i(LOG_TAG, "Exiting execution");
         }
     };
+
+    private void getDataAndCode() {
+            new MessengerSender(RETURN_DATA_AND_CODE).replyTo(response).send(messenger);
+    }
 
     URI convertPathToURI(String path) throws URISyntaxException {
         return new URI(FILE_PREFIX + path);
