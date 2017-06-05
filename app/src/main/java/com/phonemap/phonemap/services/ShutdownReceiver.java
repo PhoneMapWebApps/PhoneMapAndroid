@@ -12,15 +12,14 @@ import static com.phonemap.phonemap.constants.API.ON_DESTROY;
 
 public class ShutdownReceiver extends BroadcastReceiver {
     private static final String LOG_TAG = "ShutdownReceiver";
-    private JSRunner runner;
+    private MicroService service;
 
-    public ShutdownReceiver(JSRunner runner) {
-        this.runner = runner;
+    public ShutdownReceiver(MicroService service) {
+        this.service = service;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        MicroService service = runner.getService();
         if  (service == null) {
             Log.i(LOG_TAG, "Wanted to send onDestroy but service isn't running");
             return;

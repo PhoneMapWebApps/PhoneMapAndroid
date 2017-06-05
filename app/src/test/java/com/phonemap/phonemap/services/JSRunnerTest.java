@@ -22,9 +22,13 @@ import static org.mockito.Mockito.verify;
 public class JSRunnerTest {
     private MicroService mockService;
     private JSRunner runner;
+    private MockContext mockContext;
+
 
     @Before
     public void setup() {
+        mockContext = new MockContext();
+
         mockService = Mockito.mock(MicroService.class);
         runner = new JSRunner(mockService);
     }
@@ -59,9 +63,7 @@ public class JSRunnerTest {
         Intent mockIntent = Mockito.mock(Intent.class);
         doReturn(Intent.ACTION_SHUTDOWN).when(mockIntent).getAction();
 
-        MockContext mockContext = new MockContext();
-
-        ShutdownReceiver shutdownReceiver = new ShutdownReceiver(runner);
+        ShutdownReceiver shutdownReceiver = new ShutdownReceiver(mockService);
         shutdownReceiver.onReceive(mockContext, mockIntent);
 
         verify(mockService, times(1)).emit(ON_DESTROY, true);

@@ -45,18 +45,13 @@ public class JSRunner extends Service {
     private MicroService service;
     private Messenger messenger = null;
     private Messenger response = new Messenger(new MessageHandler());
-    private ShutdownReceiver shutdownReceiver = new ShutdownReceiver(this);
-
+    private ShutdownReceiver shutdownReceiver;
 
     public JSRunner() {
     }
 
     public JSRunner(MicroService service) {
         this.service = service;
-    }
-
-    public MicroService getService() {
-        return service;
     }
 
     private class MessageHandler extends Handler {
@@ -140,9 +135,8 @@ public class JSRunner extends Service {
         );
 
         service.start();
-
-        Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        shutdownReceiver = new ShutdownReceiver(service);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
     }
 
     private final MicroService.EventListener readyListener = new MicroService.EventListener() {
