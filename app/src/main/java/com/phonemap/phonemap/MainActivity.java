@@ -10,6 +10,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.widget.ListView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
@@ -29,13 +31,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         registerIntentFilter();
+        setupUI();
         startService(new Intent(this, JSRunner.class));
         checkForUpdates();
+    }
 
-        ArrayList<Task> searchResults = getTasks();
-
-        final ListView listView = (ListView) findViewById(R.id.taskListView);
-        listView.setAdapter(new TaskListAdapter(this, searchResults));
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -55,6 +59,17 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         unregisterManagers();
     }
+
+    private void setupUI() {
+        ArrayList<Task> searchResults = getTasks();
+
+        final ListView listView = (ListView) findViewById(R.id.taskListView);
+        listView.setAdapter(new TaskListAdapter(this, searchResults));
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+    }
+
 
     private void registerIntentFilter() {
         IntentFilter filter = new IntentFilter();
