@@ -1,6 +1,5 @@
 package com.phonemap.phonemap.services;
 
-import android.os.Messenger;
 import android.util.Log;
 
 import org.junit.Before;
@@ -16,15 +15,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Log.class})
 public class ConnectionManagerTest {
-    @Mock Socket socket;
-    @Mock Messenger replyTo;
+    @Mock Socket mockSocket;
 
     @Captor ArgumentCaptor<String> stringCaptor;
     @Captor ArgumentCaptor<Emitter.Listener> listenerCaptor;
@@ -36,8 +33,8 @@ public class ConnectionManagerTest {
 
     @Test
     public void testConstructorConnectsSocket() {
-        new ConnectionManager(socket);
-        verify(socket, times(2)).connect();
-        verify(socket, atLeast(1)).on(stringCaptor.capture(), listenerCaptor.capture());
+        new ConnectionManager(mockSocket);
+        verify(mockSocket, times(1)).connect();
+        verify(mockSocket, times(5)).on(stringCaptor.capture(), listenerCaptor.capture());
     }
 }
