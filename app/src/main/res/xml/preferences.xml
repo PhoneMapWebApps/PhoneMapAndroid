@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="General"
+        android:key="general">
+
+        <CheckBoxPreference
+            android:key="autostart"
+            android:title="Autostart"
+            android:summary="Select tasks automatically if the selected one is complete"
+            android:defaultValue="true"/>
+
+        <CheckBoxPreference
+            android:key="screen_on"
+            android:title="Run when screen is ON"
+            android:summary="Disable if your phones becomes slow while the screen is ON"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Network"
+        android:key="network">
+
+        <CheckBoxPreference
+            android:key="allow_mobile"
+            android:title="Download data on mobile network"
+            android:summary="Might incur additional costs"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Network"
+        android:key="network">
+
+        <CheckBoxPreference
+            android:key="only_connected"
+            android:title="Only run when connected to power"
+            android:summary="Some tasks are very intensive and might use a lot of power"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+</PreferenceScreen>
