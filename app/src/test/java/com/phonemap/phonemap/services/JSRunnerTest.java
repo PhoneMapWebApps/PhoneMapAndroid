@@ -22,14 +22,19 @@ import static org.mockito.Mockito.verify;
 public class JSRunnerTest {
     private MicroService mockService;
     private JSRunner runner;
+    private ShutdownReceiver shutdownReceiver;
+
     private MockContext mockContext;
+    private Intent mockIntent;
 
 
     @Before
     public void setup() {
         mockContext = new MockContext();
-
         mockService = Mockito.mock(MicroService.class);
+        mockIntent = Mockito.mock(Intent.class);
+
+        shutdownReceiver = new ShutdownReceiver(mockService);
         runner = new JSRunner(mockService);
     }
 
@@ -60,12 +65,25 @@ public class JSRunnerTest {
 
     @Test
     public void emits_onDestroy_when_phone_shutdown() {
-        Intent mockIntent = Mockito.mock(Intent.class);
         doReturn(Intent.ACTION_SHUTDOWN).when(mockIntent).getAction();
 
-        ShutdownReceiver shutdownReceiver = new ShutdownReceiver(mockService);
         shutdownReceiver.onReceive(mockContext, mockIntent);
-
         verify(mockService, times(1)).emit(ON_DESTROY, true);
+    }
+
+    @Test
+    public void doesnt_emit_onDestroy_when_screen_turn_on() {
+        doReturn(Intent.ACTION_SCREEN_ON).when(mockIntent).getAction();
+
+        shutdownReceiver.onReceive(mockContext, mockIntent);
+        verify(mockService, times(1)).emit(ON_DESTROY, false);
+    }
+
+    @Test
+    public void doesnt_emit_onDestroy_when_power_disconnected() {
+        doReturn(Intent.ACTION_POWER_DISCONNECTED).when(mockIntent).getAction();
+
+        shutdownReceiver.onReceive(mockContext, mockIntent);
+        verify(mockService, times(1)).emit(ON_DESTROY, false);
     }
 }
