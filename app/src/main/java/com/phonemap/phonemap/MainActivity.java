@@ -10,8 +10,13 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ListView;
 
+import com.phonemap.phonemap.adapters.TaskListAdapter;
+import com.phonemap.phonemap.objects.Task;
 import com.phonemap.phonemap.services.JSRunner;
+
+import java.util.ArrayList;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
@@ -26,6 +31,11 @@ public class MainActivity extends AppCompatActivity {
         registerIntentFilter();
         startService(new Intent(this, JSRunner.class));
         checkForUpdates();
+
+        ArrayList<Task> searchResults = getTasks();
+
+        final ListView listView = (ListView) findViewById(R.id.taskListView);
+        listView.setAdapter(new TaskListAdapter(this, searchResults));
     }
 
     @Override
@@ -76,5 +86,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void unregisterManagers() {
         UpdateManager.unregister();
+    }
+
+    private ArrayList<Task> getTasks(){
+        // ToDo: Replace by actual values not placeholders
+
+        ArrayList<Task> arrayList = new ArrayList<>();
+
+        for (int i = 1; i <= 10; i++) {
+            String name = "Task " + String.valueOf(i);
+            String description = "Description " + String.valueOf(i) + "\nEven more description.";
+            arrayList.add(new Task(name, description, i));
+        }
+
+        return arrayList;
     }
 }
