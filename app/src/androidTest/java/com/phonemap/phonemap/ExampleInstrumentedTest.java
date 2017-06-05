@@ -19,7 +19,6 @@ public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-
         assertEquals("com.phonemap.phonemap", appContext.getPackageName());
     }
 }

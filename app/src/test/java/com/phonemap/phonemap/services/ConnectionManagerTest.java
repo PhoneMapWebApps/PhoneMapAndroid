@@ -3,15 +3,12 @@ package com.phonemap.phonemap.services;
 import android.os.Messenger;
 import android.util.Log;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -19,7 +16,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-import static com.phonemap.phonemap.constants.Sockets.SOCKET_GET_CODE;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,13 +29,9 @@ public class ConnectionManagerTest {
     @Captor ArgumentCaptor<String> stringCaptor;
     @Captor ArgumentCaptor<Emitter.Listener> listenerCaptor;
 
-    private ConnectionManager manager;
-
     @Before
     public void setup() {
         PowerMockito.mockStatic(Log.class);
-
-        manager = new ConnectionManager(socket);
     }
 
     @Test

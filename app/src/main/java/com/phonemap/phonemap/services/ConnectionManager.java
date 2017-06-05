@@ -39,7 +39,7 @@ public class ConnectionManager extends Service {
     private final Messenger messenger = new Messenger(new MessageHandler());
     private final BlockingQueue<Messenger> waitingForWork = new LinkedBlockingQueue<>();
 
-    class MessageHandler extends Handler {
+    private class MessageHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
