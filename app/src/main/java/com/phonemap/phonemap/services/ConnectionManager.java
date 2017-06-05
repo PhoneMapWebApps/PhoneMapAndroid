@@ -37,7 +37,7 @@ public class ConnectionManager extends Service {
     private Socket socket;
 
     private final Messenger messenger = new Messenger(new MessageHandler());
-    private final BlockingQueue<Bundle> toProcess = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Messenger> waitingForWork = new LinkedBlockingQueue<>();
 
     class MessageHandler extends Handler {
         @Override
@@ -48,7 +48,6 @@ public class ConnectionManager extends Service {
                     break;
                 case RETURN_RESULTS:
                     emitSocketWithID(SOCKET_RETURN, bundleToJSON(msg.getData()));
-                    emitSocketWithID(SOCKET_GET_CODE);
                     break;
                 case FAILED_EXECUTING_CODE:
                     emitSocketWithID(SOCKET_FAILED_EXECUTING, bundleToJSON(msg.getData()));
@@ -78,15 +77,14 @@ public class ConnectionManager extends Service {
         socket.on(SOCKET_SET_CODE, setCodeListener);
     }
 
-    public void returnDataAndCode(Messenger messenger) {
-        try {
-            Bundle bundle = toProcess.take();
-            new MessengerSender(RETURN_DATA_AND_CODE).setData(bundle).send(messenger);
-            emitSocketWithID(SOCKET_START_CODE);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            //ToDo: Tell server that we failed to process the task
+    public void returnDataAndCode(Messenger replyTo) {
+        if (!waitingForWork.contains(replyTo)) {
+            waitingForWork.add(replyTo);
+        } else {
+            Log.e(LOG_TAG, "Should not be asking for work multiple times");
         }
+
+        requestMoreWork();
     }
 
     @Nullable
@@ -99,7 +97,7 @@ public class ConnectionManager extends Service {
         @Override
         public void call(Object... args) {
             id  = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-            emitSocketWithID(SOCKET_GET_CODE);
+            requestMoreWork();
         }
     };
 
@@ -147,12 +145,22 @@ public class ConnectionManager extends Service {
                 bundle.putString(PATH, path);
                 bundle.putString(DATA, data);
 
-                toProcess.add(bundle);
+                if (!waitingForWork.isEmpty()) {
+                    Messenger replyTo = waitingForWork.poll();
+                    new MessengerSender(RETURN_DATA_AND_CODE).setData(bundle).send(replyTo);
+                    emitSocketWithID(SOCKET_START_CODE);
+                }
             } catch (JSONException e) {
                 exitOnBadArgs(SOCKET_SET_CODE, args);
             }
         }
     };
+
+    private void requestMoreWork() {
+        if (socket.connected() && !waitingForWork.isEmpty()) {
+            emitSocketWithID(SOCKET_GET_CODE);
+        }
+    }
 
     private void exitOnBadArgs(String event, Object... args) {
         Log.e(LOG_TAG, "Malformed args for event:" + event);

@@ -108,15 +108,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void checkForCrashes() {
-        //CrashManager.register(this);
+        CrashManager.register(this);
     }
 
     private void checkForUpdates() {
         // Remove this for store builds!
-        //UpdateManager.register(this);
+        UpdateManager.register(this);
     }
 
     private void unregisterManagers() {
-        //UpdateManager.unregister();
+        UpdateManager.unregister();
     }
 }

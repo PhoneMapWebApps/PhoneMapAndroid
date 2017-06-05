@@ -138,6 +138,11 @@ public class JSRunner extends Service {
     private final BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if  (service == null) {
+                Log.i(LOG_TAG, "Wanted to send onDestroy but service isn't running");
+                return;
+            }
+
             if (intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
                 service.emit(ON_DESTROY, true);
             } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)
