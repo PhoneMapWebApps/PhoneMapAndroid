@@ -1,7 +1,6 @@
 package com.phonemap.phonemap.services;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +25,6 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static com.phonemap.phonemap.constants.API.ON_DESTROY;
 import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
@@ -47,9 +45,21 @@ public class JSRunner extends Service {
     private MicroService service;
     private Messenger messenger = null;
     private Messenger response = new Messenger(new MessageHandler());
+    private ShutdownReceiver shutdownReceiver = new ShutdownReceiver(this);
 
 
-    class MessageHandler extends Handler {
+    public JSRunner() {
+    }
+
+    public JSRunner(MicroService service) {
+        this.service = service;
+    }
+
+    public MicroService getService() {
+        return service;
+    }
+
+    private class MessageHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -134,23 +144,6 @@ public class JSRunner extends Service {
         Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
-
-    private final BroadcastReceiver shutdownReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if  (service == null) {
-                Log.i(LOG_TAG, "Wanted to send onDestroy but service isn't running");
-                return;
-            }
-
-            if (intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
-                service.emit(ON_DESTROY, true);
-            } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)
-                    || intent.getAction().equals(Intent.ACTION_POWER_DISCONNECTED)) {
-                service.emit(ON_DESTROY, false);
-            }
-        }
-    };
 
     private final MicroService.EventListener readyListener = new MicroService.EventListener() {
         @Override

@@ -1,25 +1,32 @@
 package com.phonemap.phonemap.services;
 
 
-import android.net.Uri;
+import android.content.Intent;
+import android.test.mock.MockContext;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.liquidplayer.service.MicroService;
+import org.mockito.Mockito;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static com.phonemap.phonemap.constants.API.ON_DESTROY;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class JSRunnerTest {
-
-    JSRunner runner;
+    private MicroService mockService;
+    private JSRunner runner;
 
     @Before
     public void setup() {
-        runner = new JSRunner();
+        mockService = Mockito.mock(MicroService.class);
+        runner = new JSRunner(mockService);
     }
 
     @Test
@@ -45,5 +52,18 @@ public class JSRunnerTest {
 
         assertTrue(uri.toString().contains("code.js"));
         assertTrue(uri.toString().contains("file://"));
+    }
+
+    @Test
+    public void emits_onDestroy_when_phone_shutdown() {
+        Intent mockIntent = Mockito.mock(Intent.class);
+        doReturn(Intent.ACTION_SHUTDOWN).when(mockIntent).getAction();
+
+        MockContext mockContext = new MockContext();
+
+        ShutdownReceiver shutdownReceiver = new ShutdownReceiver(runner);
+        shutdownReceiver.onReceive(mockContext, mockIntent);
+
+        verify(mockService, times(1)).emit(ON_DESTROY, true);
     }
 }
