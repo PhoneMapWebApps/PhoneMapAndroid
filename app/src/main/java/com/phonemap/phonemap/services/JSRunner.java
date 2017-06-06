@@ -43,12 +43,9 @@ public class JSRunner extends Service {
 
     private String data;
     private MicroService service;
-    private Messenger messenger = null;
+    private MessengerSender messengerSender;
     private Messenger response = new Messenger(new MessageHandler());
     private ShutdownReceiver shutdownReceiver;
-
-    public JSRunner() {
-    }
 
     public JSRunner(MicroService service) {
         this.service = service;
@@ -69,7 +66,7 @@ public class JSRunner extends Service {
 
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            messenger = new Messenger(service);
+            messengerSender = new MessengerSender(new Messenger(service));
             getDataAndCode();
         }
 
@@ -152,7 +149,7 @@ public class JSRunner extends Service {
             Bundle bundle = new Bundle();
             bundle.putString(RETURN, payload.toString());
 
-            new MessengerSender(RETURN_RESULTS).setData(bundle).send(messenger);
+            messengerSender.setData(bundle).setMessage(RETURN_RESULTS).send();
 
             service.getProcess().exit(0);
 
@@ -179,7 +176,7 @@ public class JSRunner extends Service {
             e.printStackTrace(new PrintWriter(sw));
             bundle.putString(EXCEPTION, sw.toString());
 
-            new MessengerSender(FAILED_EXECUTING_CODE).setData(bundle).send(messenger);
+            messengerSender.setData(bundle).setMessage(FAILED_EXECUTING_CODE).send();
             getDataAndCode();
         }
     };
@@ -192,7 +189,7 @@ public class JSRunner extends Service {
     };
 
     private void getDataAndCode() {
-            new MessengerSender(RETURN_DATA_AND_CODE).replyTo(response).send(messenger);
+        messengerSender.sendRepliesTo(response).setMessage(RETURN_DATA_AND_CODE).send();
     }
 
     URI convertPathToURI(String path) throws URISyntaxException {

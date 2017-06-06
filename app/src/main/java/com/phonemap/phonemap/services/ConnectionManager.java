@@ -132,7 +132,7 @@ public class ConnectionManager extends Service {
                 String code = message.getString(CODE);
                 String data = message.getString(DATA);
 
-                String path = null;
+                String path;
 
                 try {
                     path = writeToFile(code, "code.js", getApplicationContext());
@@ -147,7 +147,7 @@ public class ConnectionManager extends Service {
 
                 if (!waitingForWork.isEmpty()) {
                     Messenger replyTo = waitingForWork.poll();
-                    new MessengerSender(RETURN_DATA_AND_CODE).setData(bundle).send(replyTo);
+                    new MessengerSender(replyTo).setData(bundle).setMessage(RETURN_DATA_AND_CODE).send();
                     emitSocketWithID(SOCKET_START_CODE);
                 }
             } catch (JSONException e) {

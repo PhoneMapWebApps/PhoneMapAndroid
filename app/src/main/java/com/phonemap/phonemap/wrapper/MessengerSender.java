@@ -8,14 +8,21 @@ import android.util.Log;
 
 public class MessengerSender {
     private static final String LOG_TAG = "MessengerSender";
-    private final Message message;
+    private Message message;
+    private Messenger messenger;
 
-    public MessengerSender(Message message) {
-        this.message = message;
+    public MessengerSender(Messenger recipient) {
+        this.messenger = recipient;
     }
 
-    public MessengerSender(int what) {
-        message = Message.obtain(null, what);
+    public MessengerSender setMessage(int messageCode) {
+        this.message = Message.obtain(null, messageCode);
+        return this;
+    }
+
+    public MessengerSender setMessage(Message message) {
+        this.message = message;
+        return this;
     }
 
     public MessengerSender setData(Bundle bundle) {
@@ -23,15 +30,16 @@ public class MessengerSender {
         return this;
     }
 
-    public MessengerSender replyTo(Messenger replyTo) {
-        message.replyTo = replyTo;
+    public MessengerSender sendRepliesTo(Messenger recipientOfReplies) {
+        message.replyTo = recipientOfReplies;
         return this;
     }
 
-    public void send(Messenger messenger) {
+    public void send() {
         try {
             messenger.send(message);
         } catch (RemoteException e) {
+            // Todo: Handle this properly. Probably ought to be handled in the layer above, ie, this method should THROW this exception.
             e.printStackTrace();
             Log.e(LOG_TAG, "Failed to send message");
         }
