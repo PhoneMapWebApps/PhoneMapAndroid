@@ -10,14 +10,14 @@ import android.widget.TextView;
 import com.phonemap.phonemap.R;
 import com.phonemap.phonemap.objects.Task;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class TaskListAdapter extends BaseAdapter {
-    private final ArrayList<Task> tasks;
+    private final List<Task> tasks;
 
     private LayoutInflater inflater;
 
-    public TaskListAdapter(Context context, ArrayList<Task> tasks) {
+    public TaskListAdapter(Context context, List<Task> tasks) {
         this.tasks = tasks;
         this.inflater = LayoutInflater.from(context);
     }
