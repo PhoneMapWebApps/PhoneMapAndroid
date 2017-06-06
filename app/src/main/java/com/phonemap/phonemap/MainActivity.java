@@ -1,8 +1,5 @@
 package com.phonemap.phonemap;
 
-import net.hockeyapp.android.CrashManager;
-import net.hockeyapp.android.UpdateManager;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,22 +9,22 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
-import com.phonemap.phonemap.objects.NullTask;
 import com.phonemap.phonemap.objects.Task;
 import com.phonemap.phonemap.requests.RequestAPI;
 import com.phonemap.phonemap.requests.ServerListener;
 import com.phonemap.phonemap.services.JSRunner;
+
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
 
 import java.util.List;
 
@@ -40,6 +37,16 @@ import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 public class MainActivity extends AppCompatActivity implements ServerListener {
 
     private final RequestAPI requestAPI = new RequestAPI(this);
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
+                // JSRunenr stopped
+            } else if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
+                // JSRunner started executing new task
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,25 +101,12 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         setSupportActionBar(toolbar);
     }
 
-
     private void registerIntentFilter() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(JSRUNNER_STOP_INTENT);
         filter.addAction(JSRUNNER_STARTED_INTENT);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }
-
-    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
-                // JSRunenr stopped
-            } else if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
-                // JSRunner started executing new task
-            }
-        }
-    };
-
 
     private void checkForCrashes() {
         CrashManager.register(this);
@@ -133,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         int task_id = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
 
         if (task_id == INVALID_TASK_ID) {
-            setCurrentTask(new NullTask());
+            setCurrentTask(Task.NULL_TASK);
         } else {
             for (Task task : tasks) {
                 if (task.getId() == task_id) {
