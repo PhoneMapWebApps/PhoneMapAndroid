@@ -10,6 +10,10 @@ public class MessengerSender {
     private static final String LOG_TAG = "MessengerSender";
     private final Message message;
 
+    public MessengerSender(Message message) {
+        this.message = message;
+    }
+
     public MessengerSender(int what) {
         message = Message.obtain(null, what);
     }

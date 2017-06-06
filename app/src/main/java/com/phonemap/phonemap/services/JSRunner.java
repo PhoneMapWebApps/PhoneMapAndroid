@@ -67,6 +67,18 @@ public class JSRunner extends Service {
         }
     }
 
+    private ServiceConnection connection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            messenger = new Messenger(service);
+            getDataAndCode();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            Log.e(LOG_TAG, "ConnectionManager stopped unexpectedly.");
+            stopSelf();
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -90,18 +102,6 @@ public class JSRunner extends Service {
 
         unregisterReceiver(shutdownReceiver);
     }
-
-    private ServiceConnection connection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            messenger = new Messenger(service);
-            getDataAndCode();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            Log.e(LOG_TAG, "ConnectionManager stopped unexpectedly.");
-            stopSelf();
-        }
-    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
