@@ -152,7 +152,7 @@ public class JSRunner extends Service {
             Bundle bundle = new Bundle();
             bundle.putString(RETURN, payload.toString());
 
-            messengerSender.setData(bundle).setMessage(RETURN_RESULTS).send();
+            messengerSender.setMessage(RETURN_RESULTS).setData(bundle).send();
 
             service.getProcess().exit(0);
 
@@ -179,7 +179,7 @@ public class JSRunner extends Service {
             e.printStackTrace(new PrintWriter(sw));
             bundle.putString(EXCEPTION, sw.toString());
 
-            messengerSender.setData(bundle).setMessage(FAILED_EXECUTING_CODE).send();
+            messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
             getDataAndCode();
         }
     };
@@ -192,7 +192,7 @@ public class JSRunner extends Service {
     };
 
     private void getDataAndCode() {
-        messengerSender.sendRepliesTo(response).setMessage(RETURN_DATA_AND_CODE).send();
+        messengerSender.setMessage(RETURN_DATA_AND_CODE).sendRepliesTo(response).send();
     }
 
     URI convertPathToURI(String path) throws URISyntaxException {
