@@ -12,9 +12,14 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
@@ -147,5 +152,13 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
 
         TextView task_description = (TextView) findViewById(R.id.currentTaskDescription);
         task_description.setText(task.getDescription());
+    }
+
+    public void selectTaskHandler(View v) {
+        RelativeLayout row = (RelativeLayout)v.getParent();
+        Button button = (Button) row.findViewById(R.id.select_task);
+        button.setText("Preferred Task");
+
+        //ToDo: Do something useful
     }
 }

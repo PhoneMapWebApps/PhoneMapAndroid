@@ -15,8 +15,8 @@
         android:gravity="center_vertical"
         android:text="Example task"
         android:textSize="16sp"
-        android:layout_toLeftOf="@+id/button"
-        android:layout_toStartOf="@+id/button" />
+        android:layout_toLeftOf="@+id/select_task"
+        android:layout_toStartOf="@+id/select_task" />
 
     <TextView
         android:id="@+id/description"
@@ -27,16 +27,17 @@
         android:maxLines="2"
         android:text="This is a max 2 line description.\n Line 2 of description."
         android:textSize="12sp"
-        android:layout_toLeftOf="@+id/button"
-        android:layout_toStartOf="@+id/button" />
+        android:layout_toLeftOf="@+id/select_task"
+        android:layout_toStartOf="@+id/select_task" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/select_task"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:text="Select Task" />
+        android:text="Select Task"
+        android:onClick="selectTaskHandler"/>
 
 </RelativeLayout>
