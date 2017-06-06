@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -14,17 +15,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
+import com.phonemap.phonemap.objects.NullTask;
 import com.phonemap.phonemap.objects.Task;
+import com.phonemap.phonemap.requests.RequestAPI;
+import com.phonemap.phonemap.requests.ServerListener;
 import com.phonemap.phonemap.services.JSRunner;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
+import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
+import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
+import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ServerListener {
+
+    private final RequestAPI requestAPI = new RequestAPI(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +84,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupUI() {
-        ArrayList<Task> searchResults = getTasks();
-
-        final ListView listView = (ListView) findViewById(R.id.taskListView);
-        listView.setAdapter(new TaskListAdapter(this, searchResults));
-
+        requestAPI.getTasks();
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
     }
@@ -116,17 +122,30 @@ public class MainActivity extends AppCompatActivity {
         UpdateManager.unregister();
     }
 
-    private ArrayList<Task> getTasks(){
-        // ToDo: Replace by actual values not placeholders
+    @Override
+    public void gotTasks(List<Task> tasks) {
+        SharedPreferences preferences = getSharedPreferences(PREFERENCES, 0);
+        int task_id = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
 
-        ArrayList<Task> arrayList = new ArrayList<>();
-
-        for (int i = 1; i <= 10; i++) {
-            String name = "Task " + String.valueOf(i);
-            String description = "Description " + String.valueOf(i) + "\nEven more description.";
-            arrayList.add(new Task(name, description, i));
+        if (task_id == INVALID_TASK_ID) {
+            setCurrentTask(new NullTask());
+        } else {
+            for (Task task : tasks) {
+                if (task.getId() == task_id) {
+                    setCurrentTask(task);
+                }
+            }
         }
 
-        return arrayList;
+        final ListView listView = (ListView) findViewById(R.id.taskListView);
+        listView.setAdapter(new TaskListAdapter(this, tasks));
+    }
+
+    private void setCurrentTask(Task task) {
+        TextView task_name = (TextView) findViewById(R.id.currentTaskName);
+        task_name.setText(task.getName());
+
+        TextView task_description = (TextView) findViewById(R.id.currentTaskDescription);
+        task_description.setText(task.getDescription());
     }
 }
