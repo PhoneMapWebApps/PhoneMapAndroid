@@ -47,6 +47,9 @@ public class JSRunner extends Service {
     private Messenger response = new Messenger(new MessageHandler());
     private ShutdownReceiver shutdownReceiver;
 
+    public JSRunner() {
+    }
+
     public JSRunner(MicroService service) {
         this.service = service;
     }
