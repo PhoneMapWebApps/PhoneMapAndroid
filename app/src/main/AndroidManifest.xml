@@ -30,7 +30,7 @@
         </receiver>
 
         <service
-            android:name=".services.ConnectionManager"
+            android:name=".services.SocketConnectionManager"
             android:enabled="true" />
         <service
             android:name=".services.JSRunner"

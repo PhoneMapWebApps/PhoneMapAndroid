@@ -15,8 +15,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.phonemap.phonemap.wrapper.MessengerSender;
-
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
 
@@ -40,12 +38,69 @@ import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
 
 public class JSRunner extends Service {
     private static String LOG_TAG = "JSRunner";
-
+    private final MicroService.ServiceExitListener exitListener = new MicroService.ServiceExitListener() {
+        @Override
+        public void onExit(MicroService service, Integer exitCode) {
+            Log.i(LOG_TAG, "Exiting execution");
+        }
+    };
     private String data;
+    private final MicroService.EventListener readyListener = new MicroService.EventListener() {
+        @Override
+        public void onEvent(MicroService service, String event, JSONObject payload) {
+            service.emit(ON_START, data);
+        }
+    };
     private MicroService service;
     private MessengerSender messengerSender;
     private Messenger response = new Messenger(new MessageHandler());
+    private final MicroService.EventListener returnListener = new MicroService.EventListener() {
+        @Override
+        public void onEvent(MicroService service, String event, JSONObject payload) {
+            Bundle bundle = new Bundle();
+            bundle.putString(RETURN, payload.toString());
+
+            messengerSender.setMessage(RETURN_RESULTS).setData(bundle).send();
+
+            service.getProcess().exit(0);
+
+            getDataAndCode();
+        }
+    };
+    private final MicroService.ServiceStartListener startListener = new MicroService.ServiceStartListener() {
+        @Override
+        public void onStart(MicroService service) {
+            service.addEventListener(READY, readyListener);
+            service.addEventListener(RETURN, returnListener);
+        }
+    };
+    private final MicroService.ServiceErrorListener errorListener = new MicroService.ServiceErrorListener() {
+        @Override
+        public void onError(MicroService service, Exception e) {
+            Log.e(LOG_TAG, "Error occurred within MicroService");
+
+            Bundle bundle = new Bundle();
+
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            bundle.putString(EXCEPTION, sw.toString());
+
+            messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
+            getDataAndCode();
+        }
+    };
     private ShutdownReceiver shutdownReceiver;
+    private ServiceConnection connection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            messengerSender = new MessengerSender(new Messenger(service));
+            getDataAndCode();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            Log.e(LOG_TAG, "SocketConnectionManager stopped unexpectedly.");
+            stopSelf();
+        }
+    };
 
     public JSRunner() {
     }
@@ -54,35 +109,10 @@ public class JSRunner extends Service {
         this.service = service;
     }
 
-    private class MessageHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case RETURN_DATA_AND_CODE:
-                    startMicroService(msg.getData());
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    }
-
-    private ServiceConnection connection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            messengerSender = new MessengerSender(new Messenger(service));
-            getDataAndCode();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            Log.e(LOG_TAG, "ConnectionManager stopped unexpectedly.");
-            stopSelf();
-        }
-    };
-
     @Override
     public void onCreate() {
         super.onCreate();
-        bindService(new Intent(this, ConnectionManager.class), connection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, SocketConnectionManager.class), connection, Context.BIND_AUTO_CREATE);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SHUTDOWN);
@@ -139,63 +169,24 @@ public class JSRunner extends Service {
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
     }
 
-    private final MicroService.EventListener readyListener = new MicroService.EventListener() {
-        @Override
-        public void onEvent(MicroService service, String event, JSONObject payload) {
-            service.emit(ON_START, data);
-        }
-    };
-
-    private final MicroService.EventListener returnListener = new MicroService.EventListener() {
-        @Override
-        public void onEvent(MicroService service, String event, JSONObject payload) {
-            Bundle bundle = new Bundle();
-            bundle.putString(RETURN, payload.toString());
-
-            messengerSender.setMessage(RETURN_RESULTS).setData(bundle).send();
-
-            service.getProcess().exit(0);
-
-            getDataAndCode();
-        }
-    };
-
-    private final MicroService.ServiceStartListener startListener = new MicroService.ServiceStartListener() {
-        @Override
-        public void onStart(MicroService service) {
-            service.addEventListener(READY, readyListener);
-            service.addEventListener(RETURN, returnListener);
-        }
-    };
-
-    private final MicroService.ServiceErrorListener errorListener = new MicroService.ServiceErrorListener() {
-        @Override
-        public void onError(MicroService service, Exception e) {
-            Log.e(LOG_TAG, "Error occurred within MicroService");
-
-            Bundle bundle = new Bundle();
-
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            bundle.putString(EXCEPTION, sw.toString());
-
-            messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
-            getDataAndCode();
-        }
-    };
-
-    private final MicroService.ServiceExitListener exitListener = new MicroService.ServiceExitListener() {
-        @Override
-        public void onExit(MicroService service, Integer exitCode) {
-            Log.i(LOG_TAG, "Exiting execution");
-        }
-    };
-
     private void getDataAndCode() {
         messengerSender.setMessage(RETURN_DATA_AND_CODE).sendRepliesTo(response).send();
     }
 
     URI convertPathToURI(String path) throws URISyntaxException {
         return new URI(FILE_PREFIX + path);
+    }
+
+    private class MessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case RETURN_DATA_AND_CODE:
+                    startMicroService(msg.getData());
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
     }
 }

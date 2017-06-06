@@ -1,16 +1,14 @@
 package com.phonemap.phonemap.constants;
 
-import static com.phonemap.phonemap.constants.API.RETURN;
-
 public class Sockets {
     //Incoming events
-    public static final String SOCKET_SET_CODE = "set_code";
+    public static final String SET_CODE = "set_code";
 
     //Outgoing events
-    public static final String SOCKET_GET_CODE = "get_code";
-    public static final String SOCKET_FAILED_EXECUTING = "execution_failed";
-    public static final String SOCKET_RETURN = RETURN;
-    public static final String SOCKET_START_CODE = "start_code";
+    public static final String GET_CODE = "get_code";
+    public static final String EXECUTION_FAILED = "execution_failed";
+    public static final String RETURN = API.RETURN;
+    public static final String START_CODE = "start_code";
 
     //Parameters
     public static final String ID = "id";

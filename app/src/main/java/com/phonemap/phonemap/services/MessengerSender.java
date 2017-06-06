@@ -1,4 +1,4 @@
-package com.phonemap.phonemap.wrapper;
+package com.phonemap.phonemap.services;
 
 import android.os.Bundle;
 import android.os.Message;
@@ -6,6 +6,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+@SuppressWarnings("WeakerAccess")
 public class MessengerSender {
     private static final String LOG_TAG = "MessengerSender";
     private Message message;

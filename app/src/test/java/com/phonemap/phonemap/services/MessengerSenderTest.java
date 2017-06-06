@@ -6,8 +6,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
-import com.phonemap.phonemap.wrapper.MessengerSender;
-
 import org.junit.Before;
 import org.junit.Test;
 
