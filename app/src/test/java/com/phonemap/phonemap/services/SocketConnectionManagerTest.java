@@ -52,22 +52,21 @@ public class SocketConnectionManagerTest {
     @Captor ArgumentCaptor<Emitter.Listener> listenerCaptor;
     @Captor ArgumentCaptor<JSONObject> payloadCaptor;
 
-    private SocketConnectionManager socketConnectionManager;
-
     @Before
     public void setup() {
         PowerMockito.mockStatic(Log.class);
-        socketConnectionManager = new SocketConnectionManager(mockSocket);
     }
 
     @Test
     public void testConstructorConnectsSocket() {
+        new SocketConnectionManager(mockSocket);
         verify(mockSocket, times(1)).connect();
         verify(mockSocket, times(5)).on(stringCaptor.capture(), listenerCaptor.capture());
     }
 
     @Test
     public void nullDoesntBundleToNull() {
+        SocketConnectionManager socketConnectionManager = new SocketConnectionManager(mockSocket);
         JSONObject object = socketConnectionManager.bundleToJSON(null);
         assertNotEquals(object, null);
         assertEquals(object.length(), 0);
@@ -75,6 +74,7 @@ public class SocketConnectionManagerTest {
 
     @Test
     public void emptyBundleDoesntBundleToNull() {
+        SocketConnectionManager socketConnectionManager = new SocketConnectionManager(mockSocket);
         JSONObject object = socketConnectionManager.bundleToJSON(mockBundle);
         assertNotEquals(object, null);
         assertEquals(object.length(), 0);
@@ -82,6 +82,7 @@ public class SocketConnectionManagerTest {
 
     @Test
     public void canBundleOneElementBundle() {
+        SocketConnectionManager socketConnectionManager = new SocketConnectionManager(mockSocket);
         when(mockBundle.isEmpty()).thenReturn(false);
 
         Set<String> set = new HashSet<>();
@@ -103,6 +104,7 @@ public class SocketConnectionManagerTest {
 
     @Test
     public void canBundleMultiElementBundle() {
+        SocketConnectionManager socketConnectionManager = new SocketConnectionManager(mockSocket);
         when(mockBundle.isEmpty()).thenReturn(false);
 
         Set<String> set = new  HashSet<>();
@@ -127,12 +129,10 @@ public class SocketConnectionManagerTest {
     }
 
     @Test
-    public void messagesAreSignedBeforeSending() throws JSONException {
+    public void requestsCodeOnCreation() throws JSONException {
         final String TEST_PHONE_ID = "test";
 
-        mockSocket = Mockito.mock(Socket.class);
-
-        // Prep to capture ConnectListener and call it as appropriate
+        Socket mockSocket = Mockito.mock(Socket.class);
         doReturn(null).when(mockSocket).on(eq(Socket.EVENT_CONNECT), listenerCaptor.capture());
         doAnswer(new Answer<Void>() {
             @Override
@@ -143,7 +143,7 @@ public class SocketConnectionManagerTest {
         }).when(mockSocket).connect();
         doReturn(true).when(mockSocket).connected();
 
-        socketConnectionManager = new SocketConnectionManager(mockSocket);
+        SocketConnectionManager socketConnectionManager = new SocketConnectionManager(mockSocket);
         socketConnectionManager.phone = new Phone(socketConnectionManager) {
             @Override
             public String id() {
