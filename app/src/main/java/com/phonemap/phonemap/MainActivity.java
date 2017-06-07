@@ -12,11 +12,9 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -29,6 +27,7 @@ import com.phonemap.phonemap.requests.RequestAPI;
 import com.phonemap.phonemap.requests.ServerListener;
 import com.phonemap.phonemap.services.JSRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
@@ -40,6 +39,8 @@ import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 public class MainActivity extends AppCompatActivity implements ServerListener {
 
     private final RequestAPI requestAPI = new RequestAPI(this);
+
+    private List<Task> tasks = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,9 +156,17 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     }
 
     public void selectTaskHandler(View v) {
-        RelativeLayout row = (RelativeLayout)v.getParent();
+        RelativeLayout row = (RelativeLayout) v.getParent();
+        ListView listView = (ListView) row.getParent();
+
+        for (int i =  0; i < listView.getChildCount(); i++) {
+            RelativeLayout item = (RelativeLayout) listView.getChildAt(i);
+            Button rowButton = (Button) item.findViewById(R.id.select_task);
+            rowButton.setText(getString(R.string.select_task));
+        }
+
         Button button = (Button) row.findViewById(R.id.select_task);
-        button.setText("Preferred Task");
+        button.setText(getString(R.string.preferred_task));
 
         //ToDo: Do something useful
     }
