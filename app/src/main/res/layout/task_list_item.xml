@@ -13,7 +13,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignWithParentIfMissing="true"
         android:gravity="center_vertical"
-        android:text="Example task"
         android:textSize="16sp"
         android:layout_toLeftOf="@+id/select_task"
         android:layout_toStartOf="@+id/select_task" />
@@ -25,7 +24,6 @@
         android:layout_below="@+id/name"
         android:ellipsize="marquee"
         android:maxLines="2"
-        android:text="This is a max 2 line description.\n Line 2 of description."
         android:textSize="12sp"
         android:layout_toLeftOf="@+id/select_task"
         android:layout_toStartOf="@+id/select_task" />
@@ -37,7 +35,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:text="@string/select_task"
-        android:onClick="selectTaskHandler"/>
+        android:text="@string/select_task" />
 
 </RelativeLayout>

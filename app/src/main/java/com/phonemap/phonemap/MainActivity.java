@@ -1,5 +1,6 @@
 package com.phonemap.phonemap;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +29,6 @@ import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
 import java.util.List;
-import java.util.ArrayList;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
@@ -48,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
             }
         }
     };
-
-    private List<Task> tasks = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,11 +129,11 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         int task_id = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
 
         if (task_id == INVALID_TASK_ID) {
-            setCurrentTask(Task.NULL_TASK);
+            setCurrentTask(this, Task.NULL_TASK);
         } else {
             for (Task task : tasks) {
                 if (task.getId() == task_id) {
-                    setCurrentTask(task);
+                    setCurrentTask(this, task);
                 }
             }
         }
@@ -143,27 +142,8 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         listView.setAdapter(new TaskListAdapter(this, tasks));
     }
 
-    private void setCurrentTask(Task task) {
-        TextView task_name = (TextView) findViewById(R.id.currentTaskName);
+    public static void setCurrentTask(Activity activity, Task task) {
+        TextView task_name = (TextView) activity.findViewById(R.id.currentTaskName);
         task_name.setText(task.getName());
-
-        TextView task_description = (TextView) findViewById(R.id.currentTaskDescription);
-        task_description.setText(task.getDescription());
-    }
-
-    public void selectTaskHandler(View v) {
-        RelativeLayout row = (RelativeLayout) v.getParent();
-        ListView listView = (ListView) row.getParent();
-
-        for (int i =  0; i < listView.getChildCount(); i++) {
-            RelativeLayout item = (RelativeLayout) listView.getChildAt(i);
-            Button rowButton = (Button) item.findViewById(R.id.select_task);
-            rowButton.setText(getString(R.string.select_task));
-        }
-
-        Button button = (Button) row.findViewById(R.id.select_task);
-        button.setText(getString(R.string.preferred_task));
-
-        //ToDo: Do something useful
     }
 }
