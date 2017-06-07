@@ -39,7 +39,7 @@ public class JSRunnerTest {
     }
 
     @Test
-    public void testConvertPathToURIFailsOnEmptyString() {
+    public void convertPathToURIFailsOnEmptyString() {
         try {
             jsRunner.convertPathToURI("");
         } catch (URISyntaxException e) {
@@ -49,7 +49,7 @@ public class JSRunnerTest {
     }
 
     @Test
-    public void testConvertPathToURIDoesNotFailOnFilename() {
+    public void convertPathToURIDoesNotFailOnFilename() {
         URI uri;
 
         try {

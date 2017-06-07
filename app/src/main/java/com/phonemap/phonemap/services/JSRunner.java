@@ -17,6 +17,10 @@ import android.util.Log;
 
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
+import org.liquidplayer.service.MicroService.EventListener;
+import org.liquidplayer.service.MicroService.ServiceErrorListener;
+import org.liquidplayer.service.MicroService.ServiceExitListener;
+import org.liquidplayer.service.MicroService.ServiceStartListener;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,15 +41,22 @@ import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA_AND_CODE;
 import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
 
 public class JSRunner extends Service {
-    private static String LOG_TAG = "JSRunner";
-    private final MicroService.ServiceExitListener exitListener = new MicroService.ServiceExitListener() {
+    private static final String LOG_TAG = "JSRunner";
+    private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
             Log.i(LOG_TAG, "Exiting execution");
         }
     };
+    private final ServiceStartListener startListener = new ServiceStartListener() {
+        @Override
+        public void onStart(MicroService service) {
+            service.addEventListener(READY, readyListener);
+            service.addEventListener(RETURN, returnListener);
+        }
+    };
     private String data;
-    private final MicroService.EventListener readyListener = new MicroService.EventListener() {
+    private final EventListener readyListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             service.emit(ON_START, data);
@@ -53,8 +64,29 @@ public class JSRunner extends Service {
     };
     private MicroService service;
     private MessengerSender messengerSender;
-    private Messenger response = new Messenger(new MessageHandler());
-    private final MicroService.EventListener returnListener = new MicroService.EventListener() {
+    private ShutdownReceiver shutdownReceiver;
+    private Messenger incomingMessageHandler = new Messenger(new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case RETURN_DATA_AND_CODE:
+                    Bundle bundle = msg.getData();
+
+                    data = bundle.getString(DATA);
+                    try {
+                        startMicroService(bundle.getString(PATH));
+                    } catch (URISyntaxException e) {
+                        // Todo: Error handling - Tell server that something went wrong.
+                        e.printStackTrace();
+                        Log.e(LOG_TAG, "Invalid URI, could not start MicroService");
+                    }
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    });
+    private final EventListener returnListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             Bundle bundle = new Bundle();
@@ -67,14 +99,7 @@ public class JSRunner extends Service {
             getDataAndCode();
         }
     };
-    private final MicroService.ServiceStartListener startListener = new MicroService.ServiceStartListener() {
-        @Override
-        public void onStart(MicroService service) {
-            service.addEventListener(READY, readyListener);
-            service.addEventListener(RETURN, returnListener);
-        }
-    };
-    private final MicroService.ServiceErrorListener errorListener = new MicroService.ServiceErrorListener() {
+    private final ServiceErrorListener errorListener = new ServiceErrorListener() {
         @Override
         public void onError(MicroService service, Exception e) {
             Log.e(LOG_TAG, "Error occurred within MicroService");
@@ -89,7 +114,6 @@ public class JSRunner extends Service {
             getDataAndCode();
         }
     };
-    private ShutdownReceiver shutdownReceiver;
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messengerSender = new MessengerSender(new Messenger(service));
@@ -144,17 +168,6 @@ public class JSRunner extends Service {
         return null;
     }
 
-    private void startMicroService(Bundle bundle) {
-        data = bundle.getString(DATA);
-
-        try {
-            startMicroService(bundle.getString(PATH));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Invalid URI, could not start MicroService");
-        }
-    }
-
     private void startMicroService(String path) throws URISyntaxException {
         service = new MicroService(
                 getApplicationContext(),
@@ -170,23 +183,10 @@ public class JSRunner extends Service {
     }
 
     private void getDataAndCode() {
-        messengerSender.setMessage(RETURN_DATA_AND_CODE).sendRepliesTo(response).send();
+        messengerSender.setMessage(RETURN_DATA_AND_CODE).sendRepliesTo(incomingMessageHandler).send();
     }
 
     URI convertPathToURI(String path) throws URISyntaxException {
         return new URI(FILE_PREFIX + path);
-    }
-
-    private class MessageHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case RETURN_DATA_AND_CODE:
-                    startMicroService(msg.getData());
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
     }
 }

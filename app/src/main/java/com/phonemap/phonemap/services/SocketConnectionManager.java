@@ -8,9 +8,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.phonemap.phonemap.constants.Phone;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +43,7 @@ import static io.socket.emitter.Emitter.Listener;
 
 public class SocketConnectionManager extends Service {
     private static String LOG_TAG = "SocketConnectionManager";
+
     final Listener disconnectListenerListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -62,18 +64,33 @@ public class SocketConnectionManager extends Service {
             printArgs(args);
         }
     };
-    private final Messenger messenger = new Messenger(new MessageHandler());
     private final BlockingQueue<Messenger> waitingForWork = new LinkedBlockingQueue<>();
-    private String id;
-    private final JSONObject SIGNED_EMPTY_PAYLOAD = signWithID(new JSONObject());
+    public Phone phone = new Phone(this);
     private Socket socket;
     final Listener connectListener = new Listener() {
         @Override
         public void call(Object... args) {
-            id  = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             requestMoreWork();
         }
     };
+    private final Messenger messenger = new Messenger(new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            switch (message.what) {
+                case RETURN_DATA_AND_CODE:
+                    returnDataAndCode(message.replyTo);
+                    break;
+                case RETURN_RESULTS:
+                    SocketConnectionManager.this.sendToServer(RETURN, message);
+                    break;
+                case FAILED_EXECUTING_CODE:
+                    SocketConnectionManager.this.sendToServer(EXECUTION_FAILED, message);
+                    break;
+                default:
+                    super.handleMessage(message);
+            }
+        }
+    });
     final Listener setCodeListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -112,8 +129,8 @@ public class SocketConnectionManager extends Service {
 
     public SocketConnectionManager(Socket socket) {
         setupSocketOnEvents(socket);
-        socket.connect();
         this.socket = socket;
+        this.socket.connect();
     }
 
     public void setupSocketOnEvents(Socket socket) {
@@ -186,7 +203,7 @@ public class SocketConnectionManager extends Service {
 
     private JSONObject signWithID(JSONObject object) {
         try {
-            object.put(ID, id);
+            object.put(ID, phone.id());
         } catch (JSONException e) {
             // Todo: Handle error  better
             Log.e(LOG_TAG, "Failed to sign JSON with id");
@@ -195,18 +212,19 @@ public class SocketConnectionManager extends Service {
         return object;
     }
 
-    private void makeServerRequest(String apiEndPoint) {
-        sendMessage(apiEndPoint, SIGNED_EMPTY_PAYLOAD);
+    public void makeServerRequest(String apiEndPoint) {
+        sendMessage(apiEndPoint, new JSONObject());
     }
 
-    private void sendToServer(String apiEndPoint, Message message) {
-        JSONObject signedBundledPayload = signWithID(bundleToJSON(message.getData()));
-        sendMessage(apiEndPoint, signedBundledPayload);
+    public void sendToServer(String apiEndPoint, Message message) {
+        JSONObject bundledPayload = bundleToJSON(message.getData());
+        sendMessage(apiEndPoint, bundledPayload);
     }
 
     private void sendMessage(String apiEndPoint, JSONObject payload) {
-        Log.i(LOG_TAG, "Tag: " + apiEndPoint + " Payload: " + String.valueOf(payload));
-        socket.emit(apiEndPoint, payload);
+        JSONObject signedPayload = signWithID(payload);
+        Log.i(LOG_TAG, "Tag: " + apiEndPoint + " Payload: " + String.valueOf(signedPayload));
+        socket.emit(apiEndPoint, signedPayload);
     }
 
     public JSONObject bundleToJSON(Bundle bundle) {
@@ -226,24 +244,5 @@ public class SocketConnectionManager extends Service {
         }
 
         return json;
-    }
-
-    private class MessageHandler extends Handler {
-        @Override
-        public void handleMessage(Message message) {
-            switch (message.what) {
-                case RETURN_DATA_AND_CODE:
-                    returnDataAndCode(message.replyTo);
-                    break;
-                case RETURN_RESULTS:
-                    SocketConnectionManager.this.sendToServer(RETURN, message);
-                    break;
-                case FAILED_EXECUTING_CODE:
-                    SocketConnectionManager.this.sendToServer(EXECUTION_FAILED, message);
-                    break;
-                default:
-                    super.handleMessage(message);
-            }
-        }
     }
 }

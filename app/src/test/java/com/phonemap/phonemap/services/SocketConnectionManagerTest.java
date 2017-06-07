@@ -1,7 +1,11 @@
 package com.phonemap.phonemap.services;
 
 import android.os.Bundle;
+import android.os.Messenger;
 import android.util.Log;
+
+import com.phonemap.phonemap.constants.Phone;
+import com.phonemap.phonemap.constants.Sockets;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +14,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -21,10 +29,14 @@ import java.util.Set;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
+import static io.socket.emitter.Emitter.Listener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,9 +46,11 @@ import static org.mockito.Mockito.when;
 public class SocketConnectionManagerTest {
     @Mock Socket mockSocket;
     @Mock Bundle mockBundle;
+    @Mock Messenger mockMessenger;
 
     @Captor ArgumentCaptor<String> stringCaptor;
     @Captor ArgumentCaptor<Emitter.Listener> listenerCaptor;
+    @Captor ArgumentCaptor<JSONObject> payloadCaptor;
 
     private SocketConnectionManager socketConnectionManager;
 
@@ -110,5 +124,37 @@ public class SocketConnectionManagerTest {
         } catch (JSONException e) {
             fail("Did not expect an exception");
         }
+    }
+
+    @Test
+    public void messagesAreSignedBeforeSending() throws JSONException {
+        final String TEST_PHONE_ID = "test";
+
+        mockSocket = Mockito.mock(Socket.class);
+
+        // Prep to capture ConnectListener and call it as appropriate
+        doReturn(null).when(mockSocket).on(eq(Socket.EVENT_CONNECT), listenerCaptor.capture());
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                listenerCaptor.getValue().call();
+                return null;
+            }
+        }).when(mockSocket).connect();
+        doReturn(true).when(mockSocket).connected();
+
+        socketConnectionManager = new SocketConnectionManager(mockSocket);
+        socketConnectionManager.phone = new Phone(socketConnectionManager) {
+            @Override
+            public String id() {
+                return TEST_PHONE_ID;
+            }
+        };
+        socketConnectionManager.returnDataAndCode(mockMessenger);
+
+        verify(mockSocket).on(eq(Socket.EVENT_CONNECT), Matchers.<Listener>any());
+        verify(mockSocket, times(1)).connect();
+        verify(mockSocket, times(1)).emit(eq(Sockets.GET_CODE), payloadCaptor.capture());
+        assertEquals(payloadCaptor.getValue().getString(Sockets.ID), TEST_PHONE_ID);
     }
 }
