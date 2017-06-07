@@ -28,17 +28,17 @@ import io.socket.client.Socket;
 
 import static com.phonemap.phonemap.constants.Server.WS_URI;
 import static com.phonemap.phonemap.constants.Sockets.CODE;
+import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXECUTION_FAILED;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
-import static com.phonemap.phonemap.constants.Sockets.GET_CODE;
 import static com.phonemap.phonemap.constants.Sockets.ID;
+import static com.phonemap.phonemap.constants.Sockets.NEW_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
-import static com.phonemap.phonemap.constants.Sockets.RETURN;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA_AND_CODE;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
+import static com.phonemap.phonemap.constants.Sockets.REQUEST_NEW_SUBTASK;
+import static com.phonemap.phonemap.constants.Sockets.RESULT;
 import static com.phonemap.phonemap.constants.Sockets.SET_CODE;
-import static com.phonemap.phonemap.constants.Sockets.START_CODE;
+import static com.phonemap.phonemap.constants.Sockets.SUBTASK_STARTED;
 import static io.socket.emitter.Emitter.Listener;
 
 public class SocketConnectionManager extends Service {
@@ -64,7 +64,7 @@ public class SocketConnectionManager extends Service {
             printArgs(args);
         }
     };
-    private final BlockingQueue<Messenger> waitingForWork = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Messenger> readyRunners = new LinkedBlockingQueue<>();
     public Phone phone = new Phone(this);
     private Socket socket;
     final Listener connectListener = new Listener() {
@@ -77,11 +77,11 @@ public class SocketConnectionManager extends Service {
         @Override
         public void handleMessage(Message message) {
             switch (message.what) {
-                case RETURN_DATA_AND_CODE:
-                    returnDataAndCode(message.replyTo);
+                case NEW_SUBTASK:
+                    addReadyRunner(message.replyTo);
                     break;
-                case RETURN_RESULTS:
-                    SocketConnectionManager.this.sendToServer(RETURN, message);
+                case COMPLETED_SUBTASK:
+                    SocketConnectionManager.this.sendToServer(RESULT, message);
                     break;
                 case FAILED_EXECUTING_CODE:
                     SocketConnectionManager.this.sendToServer(EXECUTION_FAILED, message);
@@ -112,10 +112,10 @@ public class SocketConnectionManager extends Service {
                 bundle.putString(PATH, path);
                 bundle.putString(DATA, data);
 
-                if (!waitingForWork.isEmpty()) {
-                    Messenger replyTo = waitingForWork.poll();
-                    new MessengerSender(replyTo).setData(bundle).setMessage(RETURN_DATA_AND_CODE).send();
-                    makeServerRequest(START_CODE);
+                if (!readyRunners.isEmpty()) {
+                    Messenger nextWaitingRunner = readyRunners.poll();
+                    new MessengerSender(nextWaitingRunner).setData(bundle).setMessage(NEW_SUBTASK).send();
+                    prodServer(SUBTASK_STARTED);
                 }
             } catch (JSONException e) {
                 exitOnBadArgs(SET_CODE, args);
@@ -142,9 +142,9 @@ public class SocketConnectionManager extends Service {
         socket.on(SET_CODE, setCodeListener);
     }
 
-    public void returnDataAndCode(Messenger replyTo) {
-        if (!waitingForWork.contains(replyTo)) {
-            waitingForWork.add(replyTo);
+    public void addReadyRunner(Messenger jsRunnerMessenger) {
+        if (!readyRunners.contains(jsRunnerMessenger)) {
+            readyRunners.add(jsRunnerMessenger);
         } else {
             Log.e(LOG_TAG, "Should not be asking for work multiple times");
         }
@@ -159,8 +159,8 @@ public class SocketConnectionManager extends Service {
     }
 
     private void requestMoreWork() {
-        if (socket.connected() && !waitingForWork.isEmpty()) {
-            makeServerRequest(GET_CODE);
+        if (socket.connected() && !readyRunners.isEmpty()) {
+            prodServer(REQUEST_NEW_SUBTASK);
         }
     }
 
@@ -212,7 +212,7 @@ public class SocketConnectionManager extends Service {
         return object;
     }
 
-    public void makeServerRequest(String apiEndPoint) {
+    public void prodServer(String apiEndPoint) {
         sendMessage(apiEndPoint, new JSONObject());
     }
 

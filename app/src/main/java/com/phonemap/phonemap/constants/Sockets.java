@@ -5,10 +5,10 @@ public class Sockets {
     public static final String SET_CODE = "set_code";
 
     //Outgoing events
-    public static final String GET_CODE = "get_code";
+    public static final String REQUEST_NEW_SUBTASK = "get_code";
     public static final String EXECUTION_FAILED = "execution_failed";
-    public static final String RETURN = API.RETURN;
-    public static final String START_CODE = "start_code";
+    public static final String RESULT = API.RETURN;
+    public static final String SUBTASK_STARTED = "start_code";
 
     //Parameters
     public static final String ID = "id";
@@ -18,8 +18,8 @@ public class Sockets {
     public static final String EXCEPTION = "exception";
 
     //Message Handler
-    public static final int RETURN_DATA_AND_CODE = 0;
-    public static final int RETURN_RESULTS = 1;
+    public static final int NEW_SUBTASK = 0;
+    public static final int COMPLETED_SUBTASK = 1;
 
     public static final int FAILED_EXECUTING_CODE = 400;
 

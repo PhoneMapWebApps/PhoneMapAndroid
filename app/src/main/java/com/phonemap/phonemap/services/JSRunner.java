@@ -33,12 +33,12 @@ import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
+import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
+import static com.phonemap.phonemap.constants.Sockets.NEW_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_DATA_AND_CODE;
-import static com.phonemap.phonemap.constants.Sockets.RETURN_RESULTS;
 
 public class JSRunner extends Service {
     private static final String LOG_TAG = "JSRunner";
@@ -46,13 +46,6 @@ public class JSRunner extends Service {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
             Log.i(LOG_TAG, "Exiting execution");
-        }
-    };
-    private final ServiceStartListener startListener = new ServiceStartListener() {
-        @Override
-        public void onStart(MicroService service) {
-            service.addEventListener(READY, readyListener);
-            service.addEventListener(RETURN, returnListener);
         }
     };
     private String data;
@@ -69,7 +62,7 @@ public class JSRunner extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case RETURN_DATA_AND_CODE:
+                case NEW_SUBTASK:
                     Bundle bundle = msg.getData();
 
                     data = bundle.getString(DATA);
@@ -92,11 +85,18 @@ public class JSRunner extends Service {
             Bundle bundle = new Bundle();
             bundle.putString(RETURN, payload.toString());
 
-            messengerSender.setMessage(RETURN_RESULTS).setData(bundle).send();
+            messengerSender.setMessage(COMPLETED_SUBTASK).setData(bundle).send();
 
             service.getProcess().exit(0);
 
             getDataAndCode();
+        }
+    };
+    private final ServiceStartListener startListener = new ServiceStartListener() {
+        @Override
+        public void onStart(MicroService service) {
+            service.addEventListener(READY, readyListener);
+            service.addEventListener(RETURN, returnListener);
         }
     };
     private final ServiceErrorListener errorListener = new ServiceErrorListener() {
@@ -183,7 +183,7 @@ public class JSRunner extends Service {
     }
 
     private void getDataAndCode() {
-        messengerSender.setMessage(RETURN_DATA_AND_CODE).sendRepliesTo(incomingMessageHandler).send();
+        messengerSender.setMessage(NEW_SUBTASK).sendRepliesTo(incomingMessageHandler).send();
     }
 
     URI convertPathToURI(String path) throws URISyntaxException {

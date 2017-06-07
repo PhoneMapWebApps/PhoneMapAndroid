@@ -150,11 +150,11 @@ public class SocketConnectionManagerTest {
                 return TEST_PHONE_ID;
             }
         };
-        socketConnectionManager.returnDataAndCode(mockMessenger);
+        socketConnectionManager.addReadyRunner(mockMessenger);
 
         verify(mockSocket).on(eq(Socket.EVENT_CONNECT), Matchers.<Listener>any());
         verify(mockSocket, times(1)).connect();
-        verify(mockSocket, times(1)).emit(eq(Sockets.GET_CODE), payloadCaptor.capture());
+        verify(mockSocket, times(1)).emit(eq(Sockets.REQUEST_NEW_SUBTASK), payloadCaptor.capture());
         assertEquals(payloadCaptor.getValue().getString(Sockets.ID), TEST_PHONE_ID);
     }
 }
