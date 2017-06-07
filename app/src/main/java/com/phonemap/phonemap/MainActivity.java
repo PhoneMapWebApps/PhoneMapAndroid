@@ -32,6 +32,7 @@ import java.util.List;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
+import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
 import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
@@ -42,10 +43,12 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
-                // JSRunenr stopped
-            } else if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
-                // JSRunner started executing new task
+            if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
+                setCurrentStatus("Executing task");
+            } else if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
+                setCurrentStatus("Finished executing task");
+            } else if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
+                // ToDo: Have some visual indication that preference has changed
             }
         }
     };
@@ -107,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         IntentFilter filter = new IntentFilter();
         filter.addAction(JSRUNNER_STOP_INTENT);
         filter.addAction(JSRUNNER_STARTED_INTENT);
+        filter.addAction(UPDATED_PREFERRED_TASK);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }
 
@@ -129,11 +133,11 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         int task_id = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
 
         if (task_id == INVALID_TASK_ID) {
-            setCurrentTask(this, Task.NULL_TASK);
+            setCurrentTask(Task.NULL_TASK);
         } else {
             for (Task task : tasks) {
                 if (task.getId() == task_id) {
-                    setCurrentTask(this, task);
+                    setCurrentTask(task);
                 }
             }
         }
@@ -142,8 +146,13 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         listView.setAdapter(new TaskListAdapter(this, tasks));
     }
 
-    public static void setCurrentTask(Activity activity, Task task) {
-        TextView task_name = (TextView) activity.findViewById(R.id.currentTaskName);
+    private void setCurrentTask(Task task) {
+        TextView task_name = (TextView) findViewById(R.id.currentTaskName);
         task_name.setText(task.getName());
+    }
+
+    private void setCurrentStatus(String status) {
+        TextView currentStatus = (TextView) findViewById(R.id.currentTaskStatus);
+        currentStatus.setText(status);
     }
 }

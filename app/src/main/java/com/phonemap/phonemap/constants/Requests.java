@@ -6,5 +6,5 @@ public class Requests {
 
     public static final String TASK_ID = "task_id";
     public static final String TASK_NAME = "task_name";
-    public static final String TASK_DESCRIPTION = "task_description";
+    public static final String TASK_DESCRIPTION = "task_desc";
 }

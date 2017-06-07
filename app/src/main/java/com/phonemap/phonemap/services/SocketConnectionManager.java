@@ -3,6 +3,7 @@ package com.phonemap.phonemap.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -26,6 +27,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 
+import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
+import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
+import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
+import static com.phonemap.phonemap.constants.Requests.TASK_ID;
 import static com.phonemap.phonemap.constants.Server.WS_URI;
 import static com.phonemap.phonemap.constants.Sockets.CODE;
 import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
@@ -50,6 +55,7 @@ public class SocketConnectionManager extends Service {
             Log.i(LOG_TAG, "Disconnected");
         }
     };
+
     final Listener errorListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -57,6 +63,7 @@ public class SocketConnectionManager extends Service {
             printArgs(args);
         }
     };
+
     final Listener connectErrorListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -64,15 +71,18 @@ public class SocketConnectionManager extends Service {
             printArgs(args);
         }
     };
+
     private final BlockingQueue<Messenger> readyRunners = new LinkedBlockingQueue<>();
     public Phone phone = new Phone(this);
     private Socket socket;
+
     final Listener connectListener = new Listener() {
         @Override
         public void call(Object... args) {
             requestMoreWork();
         }
     };
+
     private final Messenger messenger = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message message) {
@@ -91,6 +101,7 @@ public class SocketConnectionManager extends Service {
             }
         }
     });
+
     final Listener setCodeListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -114,7 +125,7 @@ public class SocketConnectionManager extends Service {
 
                 if (!readyRunners.isEmpty()) {
                     Messenger nextWaitingRunner = readyRunners.poll();
-                    new MessengerSender(nextWaitingRunner).setData(bundle).setMessage(NEW_SUBTASK).send();
+                    new MessengerSender(nextWaitingRunner).setMessage(NEW_SUBTASK).setData(bundle).send();
                     prodServer(SUBTASK_STARTED);
                 }
             } catch (JSONException e) {
@@ -160,7 +171,13 @@ public class SocketConnectionManager extends Service {
 
     private void requestMoreWork() {
         if (socket.connected() && !readyRunners.isEmpty()) {
-            prodServer(REQUEST_NEW_SUBTASK);
+            SharedPreferences preferences = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
+            int task = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
+
+            Bundle bundle = new Bundle();
+            bundle.putInt(TASK_ID, task);
+
+            sendToServer(REQUEST_NEW_SUBTASK, bundle);
         }
     }
 
@@ -218,6 +235,11 @@ public class SocketConnectionManager extends Service {
 
     public void sendToServer(String apiEndPoint, Message message) {
         JSONObject bundledPayload = bundleToJSON(message.getData());
+        sendMessage(apiEndPoint, bundledPayload);
+    }
+
+    public void sendToServer(String apiEndPoint, Bundle bundle) {
+        JSONObject bundledPayload = bundleToJSON(bundle);
         sendMessage(apiEndPoint, bundledPayload);
     }
 

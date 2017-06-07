@@ -48,16 +48,19 @@ public class JSRunner extends Service {
             Log.i(LOG_TAG, "Exiting execution");
         }
     };
-    private String data;
+
     private final EventListener readyListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             service.emit(ON_START, data);
         }
     };
+
+    private String data;
     private MicroService service;
     private MessengerSender messengerSender;
     private ShutdownReceiver shutdownReceiver;
+
     private Messenger incomingMessageHandler = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -79,6 +82,7 @@ public class JSRunner extends Service {
             }
         }
     });
+
     private final EventListener returnListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
@@ -92,6 +96,7 @@ public class JSRunner extends Service {
             getDataAndCode();
         }
     };
+
     private final ServiceStartListener startListener = new ServiceStartListener() {
         @Override
         public void onStart(MicroService service) {
@@ -99,6 +104,7 @@ public class JSRunner extends Service {
             service.addEventListener(RETURN, returnListener);
         }
     };
+
     private final ServiceErrorListener errorListener = new ServiceErrorListener() {
         @Override
         public void onError(MicroService service, Exception e) {
@@ -114,6 +120,7 @@ public class JSRunner extends Service {
             getDataAndCode();
         }
     };
+
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messengerSender = new MessengerSender(new Messenger(service));
@@ -144,6 +151,7 @@ public class JSRunner extends Service {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
 
         registerReceiver(shutdownReceiver, filter);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
     }
 
     @Override
@@ -179,7 +187,6 @@ public class JSRunner extends Service {
 
         service.start();
         shutdownReceiver = new ShutdownReceiver(service);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
     }
 
     private void getDataAndCode() {

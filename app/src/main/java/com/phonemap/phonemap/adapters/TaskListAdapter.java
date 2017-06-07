@@ -2,6 +2,9 @@ package com.phonemap.phonemap.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +19,11 @@ import com.phonemap.phonemap.objects.Task;
 
 import java.util.List;
 
-import static com.phonemap.phonemap.MainActivity.setCurrentTask;
+import static android.content.Context.MODE_PRIVATE;
+import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
+import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
+import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
+import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 
 public class TaskListAdapter extends BaseAdapter {
     private final List<Task> tasks;
@@ -63,7 +70,16 @@ public class TaskListAdapter extends BaseAdapter {
                     }
 
                     holder.selectTask.setText(activity.getString(R.string.preferred_task));
-                    setCurrentTask(activity, getTaskByID((int) holder.selectTask.getTag()));
+
+                    SharedPreferences preferences =
+                            activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putInt(CURRENT_TASK, (int) holder.selectTask.getTag());
+                    editor.apply();
+
+                    Intent intent = new Intent(UPDATED_PREFERRED_TASK);
+                    LocalBroadcastManager.getInstance(activity).sendBroadcast(intent);
+
                 }
             });
 
@@ -77,6 +93,12 @@ public class TaskListAdapter extends BaseAdapter {
         holder.name.setText(task.getName());
         holder.description.setText(task.getDescription());
         holder.selectTask.setTag(task.getId());
+
+        SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
+
+        if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getId()) {
+            holder.selectTask.setText(activity.getString(R.string.preferred_task));
+        }
 
         return convertView;
     }
