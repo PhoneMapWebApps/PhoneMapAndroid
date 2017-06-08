@@ -44,7 +44,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Task Name"
                 android:textSize="16sp"/>
 
             <TextView
@@ -52,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Execution status"
+                android:text="No task running"
                 android:textSize="12sp"/>
         </LinearLayout>
 

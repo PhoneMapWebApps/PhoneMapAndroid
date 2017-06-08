@@ -30,12 +30,14 @@ import net.hockeyapp.android.UpdateManager;
 
 import java.util.List;
 
+import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
 import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
+import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
 
 public class MainActivity extends AppCompatActivity implements ServerListener {
 
@@ -44,9 +46,13 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
-                setCurrentStatus("Executing task");
+                setCurrentStatus("Executing task.");
             } else if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
-                setCurrentStatus("Finished executing task");
+                setCurrentStatus("Finished executing task.");
+            } else if (intent.getAction().equals(JSRUNNER_FAILED_EXECUTION)) {
+                setCurrentStatus("Error occurred when executing task! Retrying...");
+            } else if (intent.getAction().equals(NO_TASKS)) {
+                setCurrentStatus("No tasks available.");
             } else if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
                 // ToDo: Have some visual indication that preference has changed
             }
@@ -110,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         IntentFilter filter = new IntentFilter();
         filter.addAction(JSRUNNER_STOP_INTENT);
         filter.addAction(JSRUNNER_STARTED_INTENT);
+        filter.addAction(JSRUNNER_FAILED_EXECUTION);
+        filter.addAction(NO_TASKS);
         filter.addAction(UPDATED_PREFERRED_TASK);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }

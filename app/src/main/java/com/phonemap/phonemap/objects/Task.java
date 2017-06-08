@@ -3,7 +3,7 @@ package com.phonemap.phonemap.objects;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 
 public class Task {
-    public final static Task NULL_TASK = new Task("No task selected", "", INVALID_TASK_ID);
+    public final static Task NULL_TASK = new Task("", "", INVALID_TASK_ID);
     private final String name;
     private final String description;
     private final int id;

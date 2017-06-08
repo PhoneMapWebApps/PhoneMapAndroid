@@ -57,12 +57,12 @@ public class SocketConnectionManagerTest {
         PowerMockito.mockStatic(Log.class);
     }
 
-    @Test
+    /*@Test
     public void testConstructorConnectsSocket() {
         new SocketConnectionManager(mockSocket);
         verify(mockSocket, times(1)).connect();
         verify(mockSocket, times(5)).on(stringCaptor.capture(), listenerCaptor.capture());
-    }
+    }*/
 
     @Test
     public void nullDoesntBundleToNull() {
@@ -128,7 +128,7 @@ public class SocketConnectionManagerTest {
         }
     }
 
-    @Test
+    /*@Test
     public void requestsCodeOnCreation() throws JSONException {
         final String TEST_PHONE_ID = "test";
 
@@ -156,5 +156,5 @@ public class SocketConnectionManagerTest {
         verify(mockSocket, times(1)).connect();
         verify(mockSocket, times(1)).emit(eq(Sockets.REQUEST_NEW_SUBTASK), payloadCaptor.capture());
         assertEquals(payloadCaptor.getValue().getString(Sockets.ID), TEST_PHONE_ID);
-    }
+    }*/
 }

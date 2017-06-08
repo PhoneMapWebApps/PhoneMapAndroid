@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
+import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
@@ -42,10 +43,13 @@ import static com.phonemap.phonemap.constants.Sockets.PATH;
 
 public class JSRunner extends Service {
     private static final String LOG_TAG = "JSRunner";
+
     private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
-            Log.i(LOG_TAG, "Exiting execution");
+            LocalBroadcastManager
+                    .getInstance(getApplicationContext())
+                    .sendBroadcast(new Intent(JSRUNNER_STOP_INTENT));
         }
     };
 
@@ -53,6 +57,17 @@ public class JSRunner extends Service {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             service.emit(ON_START, data);
+            LocalBroadcastManager
+                    .getInstance(getApplicationContext())
+                    .sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
+        }
+    };
+
+    private final ServiceStartListener startListener = new ServiceStartListener() {
+        @Override
+        public void onStart(MicroService service) {
+            service.addEventListener(READY, readyListener);
+            service.addEventListener(RETURN, returnListener);
         }
     };
 
@@ -97,14 +112,6 @@ public class JSRunner extends Service {
         }
     };
 
-    private final ServiceStartListener startListener = new ServiceStartListener() {
-        @Override
-        public void onStart(MicroService service) {
-            service.addEventListener(READY, readyListener);
-            service.addEventListener(RETURN, returnListener);
-        }
-    };
-
     private final ServiceErrorListener errorListener = new ServiceErrorListener() {
         @Override
         public void onError(MicroService service, Exception e) {
@@ -118,6 +125,10 @@ public class JSRunner extends Service {
 
             messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
             getDataAndCode();
+
+            LocalBroadcastManager
+                    .getInstance(getApplicationContext())
+                    .sendBroadcast(new Intent(JSRUNNER_FAILED_EXECUTION));
         }
     };
 
@@ -151,16 +162,12 @@ public class JSRunner extends Service {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
 
         registerReceiver(shutdownReceiver, filter);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         unbindService(connection);
-
-        Intent intent = new Intent(JSRUNNER_STOP_INTENT);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
         unregisterReceiver(shutdownReceiver);
     }

@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.phonemap.phonemap.constants.Phone;
@@ -39,6 +40,7 @@ import static com.phonemap.phonemap.constants.Sockets.EXECUTION_FAILED;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
 import static com.phonemap.phonemap.constants.Sockets.ID;
 import static com.phonemap.phonemap.constants.Sockets.NEW_SUBTASK;
+import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 import static com.phonemap.phonemap.constants.Sockets.REQUEST_NEW_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.RESULT;
@@ -134,6 +136,15 @@ public class SocketConnectionManager extends Service {
         }
     };
 
+    final Listener noTaskListener = new Listener() {
+        @Override
+        public void call(Object... args) {
+            LocalBroadcastManager
+                    .getInstance(getApplicationContext())
+                    .sendBroadcast(new Intent(NO_TASKS));
+        }
+    };
+
     public SocketConnectionManager() {
         this(IO.socket(WS_URI));
     }
@@ -150,6 +161,7 @@ public class SocketConnectionManager extends Service {
         socket.on(Socket.EVENT_ERROR, errorListener);
         socket.on(Socket.EVENT_CONNECT_ERROR, connectErrorListener);
 
+        socket.on(NO_TASKS, noTaskListener);
         socket.on(SET_CODE, setCodeListener);
     }
 

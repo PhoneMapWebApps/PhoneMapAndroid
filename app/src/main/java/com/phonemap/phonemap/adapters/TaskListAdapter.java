@@ -60,6 +60,7 @@ public class TaskListAdapter extends BaseAdapter {
             holder.name = (TextView) convertView.findViewById(R.id.name);
             holder.description = (TextView) convertView.findViewById(R.id.description);
             holder.selectTask = (Button) convertView.findViewById(R.id.select_task);
+
             holder.selectTask.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -101,16 +102,6 @@ public class TaskListAdapter extends BaseAdapter {
         }
 
         return convertView;
-    }
-
-    private Task getTaskByID(int id) {
-        for (Task task : tasks) {
-            if (task.getId() == id) {
-                return task;
-            }
-        }
-
-        return Task.NULL_TASK;
     }
 
     private static class ViewHolder {

@@ -3,6 +3,7 @@ package com.phonemap.phonemap.constants;
 public class Sockets {
     //Incoming events
     public static final String SET_CODE = "set_code";
+    public static final String NO_TASKS = "no_tasks";
 
     //Outgoing events
     public static final String REQUEST_NEW_SUBTASK = "get_code";
