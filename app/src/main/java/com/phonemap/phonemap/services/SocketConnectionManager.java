@@ -32,6 +32,7 @@ import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 import static com.phonemap.phonemap.constants.Requests.TASK_ID;
+import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Server.WS_URI;
 import static com.phonemap.phonemap.constants.Sockets.CODE;
 import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
@@ -111,6 +112,7 @@ public class SocketConnectionManager extends Service {
                 JSONObject message = (JSONObject) args[args.length - 1];
                 String code = message.getString(CODE);
                 String data = message.getString(DATA);
+                String task_name = message.getString(TASK_NAME);
 
                 String path;
 
@@ -124,6 +126,7 @@ public class SocketConnectionManager extends Service {
                 Bundle bundle = new Bundle();
                 bundle.putString(PATH, path);
                 bundle.putString(DATA, data);
+                bundle.putString(TASK_NAME, task_name);
 
                 if (!readyRunners.isEmpty()) {
                     Messenger nextWaitingRunner = readyRunners.poll();

@@ -1,22 +1,16 @@
 package com.phonemap.phonemap;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
@@ -34,9 +28,7 @@ import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
-import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
-import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
-import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
+import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
 
 public class MainActivity extends AppCompatActivity implements ServerListener {
@@ -47,12 +39,14 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
                 setCurrentStatus("Executing task.");
+                setCurrentName(intent.getStringExtra(TASK_NAME));
             } else if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
                 setCurrentStatus("Finished executing task.");
             } else if (intent.getAction().equals(JSRUNNER_FAILED_EXECUTION)) {
                 setCurrentStatus("Error occurred when executing task! Retrying...");
             } else if (intent.getAction().equals(NO_TASKS)) {
                 setCurrentStatus("No tasks available.");
+                setCurrentName("");
             } else if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
                 // ToDo: Have some visual indication that preference has changed
             }
@@ -66,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
 
         registerIntentFilter();
         setupUI();
+
+        requestAPI.getTasks();
+
         startService(new Intent(this, JSRunner.class));
         checkForUpdates();
     }
@@ -107,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     }
 
     private void setupUI() {
-        requestAPI.getTasks();
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
     }
@@ -137,26 +133,17 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
 
     @Override
     public void gotTasks(List<Task> tasks) {
-        SharedPreferences preferences = getSharedPreferences(PREFERENCES, 0);
-        int task_id = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
-
-        if (task_id == INVALID_TASK_ID) {
-            setCurrentTask(Task.NULL_TASK);
-        } else {
-            for (Task task : tasks) {
-                if (task.getId() == task_id) {
-                    setCurrentTask(task);
-                }
-            }
-        }
-
         final ListView listView = (ListView) findViewById(R.id.taskListView);
         listView.setAdapter(new TaskListAdapter(this, tasks));
     }
 
-    private void setCurrentTask(Task task) {
+    private void setCurrentName(String name) {
         TextView task_name = (TextView) findViewById(R.id.currentTaskName);
-        task_name.setText(task.getName());
+
+        if (!name.equals(task_name.getText())) {
+            task_name.setText(name);
+            requestAPI.getTasks();
+        }
     }
 
     private void setCurrentStatus(String status) {

@@ -34,6 +34,7 @@ import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
+import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
@@ -57,9 +58,6 @@ public class JSRunner extends Service {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             service.emit(ON_START, data);
-            LocalBroadcastManager
-                    .getInstance(getApplicationContext())
-                    .sendBroadcast(new Intent(JSRUNNER_STARTED_INTENT));
         }
     };
 
@@ -81,11 +79,8 @@ public class JSRunner extends Service {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case NEW_SUBTASK:
-                    Bundle bundle = msg.getData();
-
-                    data = bundle.getString(DATA);
                     try {
-                        startMicroService(bundle.getString(PATH));
+                        startMicroService(msg.getData());
                     } catch (URISyntaxException e) {
                         // Todo: Error handling - Tell server that something went wrong.
                         e.printStackTrace();
@@ -183,7 +178,12 @@ public class JSRunner extends Service {
         return null;
     }
 
-    private void startMicroService(String path) throws URISyntaxException {
+    private void startMicroService(Bundle bundle) throws URISyntaxException {
+        String path = bundle.getString(PATH);
+        String task_name = bundle.getString(TASK_NAME);
+
+        data = bundle.getString(DATA);
+
         service = new MicroService(
                 getApplicationContext(),
                 convertPathToURI(path),
@@ -194,6 +194,13 @@ public class JSRunner extends Service {
 
         service.start();
         shutdownReceiver = new ShutdownReceiver(service);
+
+        Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
+        intent.putExtra(TASK_NAME, task_name);
+
+        LocalBroadcastManager
+                .getInstance(getApplicationContext())
+                .sendBroadcast(intent);
     }
 
     private void getDataAndCode() {
