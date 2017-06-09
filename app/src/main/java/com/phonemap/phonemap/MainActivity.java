@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     protected void onResume() {
         super.onResume();
         checkForCrashes();
+        requestAPI.getTasks();
     }
 
     @Override

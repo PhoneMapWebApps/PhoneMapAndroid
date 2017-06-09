@@ -32,6 +32,7 @@
         <service
             android:name=".services.SocketConnectionManager"
             android:enabled="true" />
+
         <service
             android:name=".services.JSRunner"
             android:enabled="true" />
