@@ -4,6 +4,7 @@ public class Sockets {
     //Incoming events
     public static final String SET_CODE = "set_code";
     public static final String NO_TASKS = "no_tasks";
+    public static final String CODE_AVAILABLE = "code_available";
 
     //Outgoing events
     public static final String REQUEST_NEW_SUBTASK = "get_code";
@@ -21,6 +22,7 @@ public class Sockets {
     //Message Handler
     public static final int NEW_SUBTASK = 0;
     public static final int COMPLETED_SUBTASK = 1;
+    public static final int NEW_TASK = 2;
 
     public static final int FAILED_EXECUTING_CODE = 400;
 

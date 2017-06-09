@@ -42,6 +42,7 @@ import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXCEPTION;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
 import static com.phonemap.phonemap.constants.Sockets.NEW_SUBTASK;
+import static com.phonemap.phonemap.constants.Sockets.NEW_TASK;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 
 public class JSRunner extends Service {
@@ -53,6 +54,8 @@ public class JSRunner extends Service {
             LocalBroadcastManager
                     .getInstance(getApplicationContext())
                     .sendBroadcast(new Intent(JSRUNNER_STOP_INTENT));
+            serviceRunning = false;
+            getDataAndCode();
         }
     };
 
@@ -75,6 +78,7 @@ public class JSRunner extends Service {
     private MicroService service;
     private MessengerSender messengerSender;
     private ShutdownReceiver shutdownReceiver;
+    private boolean serviceRunning = false;
 
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
@@ -98,6 +102,10 @@ public class JSRunner extends Service {
                         Log.e(LOG_TAG, "Invalid URI, could not start MicroService");
                     }
                     break;
+                case NEW_TASK:
+                    if (!serviceRunning) {
+                        getDataAndCode();
+                    }
                 default:
                     super.handleMessage(msg);
             }
@@ -113,8 +121,6 @@ public class JSRunner extends Service {
             messengerSender.setMessage(COMPLETED_SUBTASK).setData(bundle).send();
 
             service.getProcess().exit(0);
-
-            getDataAndCode();
         }
     };
 
@@ -129,6 +135,7 @@ public class JSRunner extends Service {
             e.printStackTrace(new PrintWriter(sw));
             bundle.putString(EXCEPTION, sw.toString());
 
+            serviceRunning = false;
             messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
             getDataAndCode();
 
@@ -215,6 +222,7 @@ public class JSRunner extends Service {
                 exitListener
         );
 
+        serviceRunning = true;
         service.start();
         shutdownReceiver = new ShutdownReceiver(service);
 

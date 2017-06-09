@@ -38,12 +38,14 @@ import static com.phonemap.phonemap.constants.Requests.TASK_ID;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Server.WS_URI;
 import static com.phonemap.phonemap.constants.Sockets.CODE;
+import static com.phonemap.phonemap.constants.Sockets.CODE_AVAILABLE;
 import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.DATA;
 import static com.phonemap.phonemap.constants.Sockets.EXECUTION_FAILED;
 import static com.phonemap.phonemap.constants.Sockets.FAILED_EXECUTING_CODE;
 import static com.phonemap.phonemap.constants.Sockets.ID;
 import static com.phonemap.phonemap.constants.Sockets.NEW_SUBTASK;
+import static com.phonemap.phonemap.constants.Sockets.NEW_TASK;
 import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 import static com.phonemap.phonemap.constants.Sockets.REQUEST_NEW_SUBTASK;
@@ -132,8 +134,7 @@ public class SocketConnectionManager extends Service {
                 bundle.putString(TASK_NAME, task_name);
 
                 if (!readyRunners.isEmpty()) {
-                    Messenger nextWaitingRunner = readyRunners.poll();
-                    new MessengerSender(nextWaitingRunner).setMessage(NEW_SUBTASK).setData(bundle).send();
+                    new MessengerSender(getWaitingRunner()).setMessage(NEW_SUBTASK).setData(bundle).send();
                     prodServer(SUBTASK_STARTED);
                 }
             } catch (JSONException e) {
@@ -148,6 +149,14 @@ public class SocketConnectionManager extends Service {
             LocalBroadcastManager
                     .getInstance(getApplicationContext())
                     .sendBroadcast(new Intent(NO_TASKS));
+        }
+    };
+
+    final Listener codeAvailableListener = new Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, "Code Available");
+            new MessengerSender(getWaitingRunner()).setMessage(NEW_TASK).send();
         }
     };
 
@@ -169,13 +178,12 @@ public class SocketConnectionManager extends Service {
 
         socket.on(NO_TASKS, noTaskListener);
         socket.on(SET_CODE, setCodeListener);
+        socket.on(CODE_AVAILABLE, codeAvailableListener);
     }
 
     public void addReadyRunner(Messenger jsRunnerMessenger) {
         if (!readyRunners.contains(jsRunnerMessenger)) {
             readyRunners.add(jsRunnerMessenger);
-        } else {
-            Log.e(LOG_TAG, "Should not be asking for work multiple times");
         }
 
         requestMoreWork();
@@ -185,6 +193,10 @@ public class SocketConnectionManager extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return messenger.getBinder();
+    }
+
+    private  Messenger getWaitingRunner() {
+        return readyRunners.poll();
     }
 
     private void requestMoreWork() {
