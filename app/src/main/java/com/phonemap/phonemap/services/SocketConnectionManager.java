@@ -155,7 +155,6 @@ public class SocketConnectionManager extends Service {
     final Listener codeAvailableListener = new Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "Code Available");
             new MessengerSender(getWaitingRunner()).setMessage(NEW_TASK).send();
         }
     };
