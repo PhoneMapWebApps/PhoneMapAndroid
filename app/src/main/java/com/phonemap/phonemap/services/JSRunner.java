@@ -1,6 +1,7 @@
 package com.phonemap.phonemap.services;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
+import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Sockets.COMPLETED_SUBTASK;
@@ -73,6 +75,15 @@ public class JSRunner extends Service {
     private MicroService service;
     private MessengerSender messengerSender;
     private ShutdownReceiver shutdownReceiver;
+
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+             if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
+                // ToDo: Update what should run
+            }
+        }
+    };
 
     private Messenger incomingMessageHandler = new Messenger(new Handler() {
         @Override
@@ -157,6 +168,7 @@ public class JSRunner extends Service {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
 
         registerReceiver(shutdownReceiver, filter);
+        registerIntentFilter();
     }
 
     @Override
@@ -165,6 +177,7 @@ public class JSRunner extends Service {
         unbindService(connection);
 
         unregisterReceiver(shutdownReceiver);
+        unregisterIntentFilter();
     }
 
     @Override
@@ -176,6 +189,16 @@ public class JSRunner extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void unregisterIntentFilter() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
+    }
+
+    private void registerIntentFilter() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UPDATED_PREFERRED_TASK);
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }
 
     private void startMicroService(Bundle bundle) throws URISyntaxException {

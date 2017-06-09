@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -28,9 +29,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 
+import static com.phonemap.phonemap.constants.Preferences.AUTOSTART;
 import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
+import static com.phonemap.phonemap.constants.Requests.FORCE_TASK;
 import static com.phonemap.phonemap.constants.Requests.TASK_ID;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Server.WS_URI;
@@ -189,8 +192,11 @@ public class SocketConnectionManager extends Service {
             SharedPreferences preferences = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
             int task = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
 
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
             Bundle bundle = new Bundle();
             bundle.putInt(TASK_ID, task);
+            bundle.putBoolean(FORCE_TASK, prefs.getBoolean(AUTOSTART, true));
 
             sendToServer(REQUEST_NEW_SUBTASK, bundle);
         }

@@ -4,10 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -102,11 +105,17 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     protected void onDestroy() {
         super.onDestroy();
         unregisterManagers();
+        unregisterIntentFilter();
+
     }
 
     private void setupUI() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
+    }
+
+    private void unregisterIntentFilter() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
     }
 
     private void registerIntentFilter() {
@@ -115,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         filter.addAction(JSRUNNER_STARTED_INTENT);
         filter.addAction(JSRUNNER_FAILED_EXECUTION);
         filter.addAction(NO_TASKS);
-        filter.addAction(UPDATED_PREFERRED_TASK);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }
 
