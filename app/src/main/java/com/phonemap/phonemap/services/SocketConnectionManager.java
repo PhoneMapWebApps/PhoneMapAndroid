@@ -207,7 +207,7 @@ public class SocketConnectionManager extends Service {
 
             Bundle bundle = new Bundle();
             bundle.putInt(TASK_ID, task);
-            bundle.putBoolean(FORCE_TASK, prefs.getBoolean(AUTOSTART, true));
+            bundle.putBoolean(FORCE_TASK, !prefs.getBoolean(AUTOSTART, true));
 
             sendToServer(REQUEST_NEW_SUBTASK, bundle);
         }
