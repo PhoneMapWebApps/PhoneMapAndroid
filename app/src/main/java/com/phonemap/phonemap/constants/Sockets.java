@@ -7,7 +7,7 @@ public class Sockets {
     public static final String CODE_AVAILABLE = "code_available";
 
     //Outgoing events
-    public static final String REQUEST_NEW_SUBTASK = "get_code";
+    public static final String REQUEST_NEW_SUBTASK = "get_code_by_id";
     public static final String EXECUTION_FAILED = "execution_failed";
     public static final String RESULT = API.RETURN;
     public static final String SUBTASK_STARTED = "start_code";
