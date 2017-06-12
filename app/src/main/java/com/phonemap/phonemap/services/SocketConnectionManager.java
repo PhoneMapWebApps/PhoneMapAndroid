@@ -3,18 +3,17 @@ package com.phonemap.phonemap.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.phonemap.phonemap.constants.Phone;
+import com.phonemap.phonemap.constants.Preferences;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,10 +28,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 
-import static com.phonemap.phonemap.constants.Preferences.AUTOSTART;
-import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
-import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
-import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 import static com.phonemap.phonemap.constants.Requests.FORCE_TASK;
 import static com.phonemap.phonemap.constants.Requests.TASK_ID;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
@@ -55,7 +50,7 @@ import static com.phonemap.phonemap.constants.Sockets.SUBTASK_STARTED;
 import static io.socket.emitter.Emitter.Listener;
 
 public class SocketConnectionManager extends Service {
-    private static String LOG_TAG = "SocketConnectionManager";
+    private static final String LOG_TAG = "SocketConnectionManager";
 
     final Listener disconnectListenerListener = new Listener() {
         @Override
@@ -79,18 +74,30 @@ public class SocketConnectionManager extends Service {
             printArgs(args);
         }
     };
-
+    final Listener noTaskListener = new Listener() {
+        @Override
+        public void call(Object... args) {
+            LocalBroadcastManager
+                    .getInstance(getApplicationContext())
+                    .sendBroadcast(new Intent(NO_TASKS));
+        }
+    };
     private final BlockingQueue<Messenger> readyRunners = new LinkedBlockingQueue<>();
+    final Listener codeAvailableListener = new Listener() {
+        @Override
+        public void call(Object... args) {
+            new MessengerSender(getWaitingRunner()).setMessage(NEW_TASK).send();
+        }
+    };
     public Phone phone = new Phone(this);
+    public Preferences preferences = new Preferences(this);
     private Socket socket;
-
     final Listener connectListener = new Listener() {
         @Override
         public void call(Object... args) {
             requestMoreWork();
         }
     };
-
     private final Messenger messenger = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message message) {
@@ -109,7 +116,6 @@ public class SocketConnectionManager extends Service {
             }
         }
     });
-
     final Listener setCodeListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -128,7 +134,7 @@ public class SocketConnectionManager extends Service {
                     return;
                 }
 
-                Bundle bundle = new Bundle();
+                Bundle bundle = emptyBundle();
                 bundle.putString(PATH, path);
                 bundle.putString(DATA, data);
                 bundle.putString(TASK_NAME, task_name);
@@ -143,22 +149,6 @@ public class SocketConnectionManager extends Service {
         }
     };
 
-    final Listener noTaskListener = new Listener() {
-        @Override
-        public void call(Object... args) {
-            LocalBroadcastManager
-                    .getInstance(getApplicationContext())
-                    .sendBroadcast(new Intent(NO_TASKS));
-        }
-    };
-
-    final Listener codeAvailableListener = new Listener() {
-        @Override
-        public void call(Object... args) {
-            new MessengerSender(getWaitingRunner()).setMessage(NEW_TASK).send();
-        }
-    };
-
     public SocketConnectionManager() {
         this(IO.socket(WS_URI));
     }
@@ -167,6 +157,10 @@ public class SocketConnectionManager extends Service {
         setupSocketOnEvents(socket);
         this.socket = socket;
         this.socket.connect();
+    }
+
+    public Bundle emptyBundle() {
+        return new Bundle();
     }
 
     public void setupSocketOnEvents(Socket socket) {
@@ -200,14 +194,9 @@ public class SocketConnectionManager extends Service {
 
     private void requestMoreWork() {
         if (socket.connected() && !readyRunners.isEmpty()) {
-            SharedPreferences preferences = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
-            int task = preferences.getInt(CURRENT_TASK, INVALID_TASK_ID);
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-            Bundle bundle = new Bundle();
-            bundle.putInt(TASK_ID, task);
-            bundle.putBoolean(FORCE_TASK, !prefs.getBoolean(AUTOSTART, true));
+            Bundle bundle = emptyBundle();
+            bundle.putInt(TASK_ID, preferences.preferredTask());
+            bundle.putBoolean(FORCE_TASK, preferences.autostartEnabled());
 
             sendToServer(REQUEST_NEW_SUBTASK, bundle);
         }
