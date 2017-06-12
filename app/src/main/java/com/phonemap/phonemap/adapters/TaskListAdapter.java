@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +52,7 @@ public class TaskListAdapter extends BaseAdapter {
         return position;
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, final ViewGroup parent) {
         final ViewHolder holder;
 
         if (convertView == null) {
@@ -70,12 +71,19 @@ public class TaskListAdapter extends BaseAdapter {
                         button.setText(activity.getString(R.string.select_task));
                     }
 
-                    holder.selectTask.setText(activity.getString(R.string.preferred_task));
-
                     SharedPreferences preferences =
                             activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
                     SharedPreferences.Editor editor = preferences.edit();
-                    editor.putInt(CURRENT_TASK, (int) holder.selectTask.getTag());
+
+
+                    if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == (int) holder.selectTask.getTag()) {
+                        holder.selectTask.setText(activity.getString(R.string.select_task));
+                        editor.putInt(CURRENT_TASK, INVALID_TASK_ID);
+                    } else {
+                        holder.selectTask.setText(activity.getString(R.string.preferred_task));
+                        editor.putInt(CURRENT_TASK, (int) holder.selectTask.getTag());
+                    }
+
                     editor.apply();
 
                     Intent intent = new Intent(UPDATED_PREFERRED_TASK);

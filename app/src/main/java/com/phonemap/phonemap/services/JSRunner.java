@@ -84,7 +84,7 @@ public class JSRunner extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
              if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
-                // ToDo: Update what should run
+                getDataAndCode();
             }
         }
     };
@@ -103,9 +103,7 @@ public class JSRunner extends Service {
                     }
                     break;
                 case NEW_TASK:
-                    if (!serviceRunning) {
-                        getDataAndCode();
-                    }
+                    getDataAndCode();
                 default:
                     super.handleMessage(msg);
             }
@@ -235,7 +233,9 @@ public class JSRunner extends Service {
     }
 
     private void getDataAndCode() {
-        messengerSender.setMessage(NEW_SUBTASK).sendRepliesTo(incomingMessageHandler).send();
+        if (!serviceRunning) {
+            messengerSender.setMessage(NEW_SUBTASK).sendRepliesTo(incomingMessageHandler).send();
+        }
     }
 
     URI convertPathToURI(String path) throws URISyntaxException {
