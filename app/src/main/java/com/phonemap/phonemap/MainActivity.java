@@ -13,6 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -25,18 +27,23 @@ import com.phonemap.phonemap.services.JSRunner;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
+import static com.phonemap.phonemap.constants.Other.TASK;
+import static com.phonemap.phonemap.constants.Requests.TASK_DESCRIPTION;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
 
 public class MainActivity extends AppCompatActivity implements ServerListener {
 
     private final RequestAPI requestAPI = new RequestAPI(this);
+    private final String LOG_TAG = "MainActivity";
+
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -141,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     }
 
     @Override
-    public void gotTasks(List<Task> tasks) {
+    public void gotTasks(final List<Task> tasks) {
         final ListView listView = (ListView) findViewById(R.id.taskListView);
         listView.setAdapter(new TaskListAdapter(this, tasks));
     }

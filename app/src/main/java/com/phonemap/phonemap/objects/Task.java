@@ -1,8 +1,10 @@
 package com.phonemap.phonemap.objects;
 
+import java.io.Serializable;
+
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 
-public class Task {
+public class Task implements Serializable {
     public final static Task NULL_TASK = new Task("", "", INVALID_TASK_ID);
     private final String name;
     private final String description;

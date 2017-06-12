@@ -32,7 +32,6 @@
         <service
             android:name=".services.SocketConnectionManager"
             android:enabled="true" />
-
         <service
             android:name=".services.JSRunner"
             android:enabled="true" />
@@ -41,7 +40,8 @@
             android:name="net.hockeyapp.android.appIdentifier"
             android:value="${HOCKEYAPP_APP_ID}" />
 
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".TaskDescription"></activity>
     </application>
 
 </manifest>

@@ -16,12 +16,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.R;
+import com.phonemap.phonemap.SettingsActivity;
+import com.phonemap.phonemap.TaskDescription;
 import com.phonemap.phonemap.objects.Task;
 
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
+import static com.phonemap.phonemap.constants.Other.TASK;
 import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
@@ -52,7 +55,7 @@ public class TaskListAdapter extends BaseAdapter {
         return position;
     }
 
-    public View getView(int position, View convertView, final ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
         final ViewHolder holder;
 
         if (convertView == null) {
@@ -92,12 +95,21 @@ public class TaskListAdapter extends BaseAdapter {
                 }
             });
 
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // ToDo: Fix serialization
+                    Intent intent = new Intent(activity, TaskDescription.class);
+                    intent.putExtra(TASK, tasks.get(position));
+                    activity.startActivity(intent);
+                }
+            });
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Task task =  tasks.get(position);
+        Task task = tasks.get(position);
 
         holder.name.setText(task.getName());
         holder.description.setText(task.getDescription());
