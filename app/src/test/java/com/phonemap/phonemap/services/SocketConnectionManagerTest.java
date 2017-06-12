@@ -1,7 +1,10 @@
 package com.phonemap.phonemap.services;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 import com.phonemap.phonemap.constants.Phone;
@@ -14,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.BDDMockito;
 import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -32,11 +36,13 @@ import io.socket.emitter.Emitter;
 
 import static com.phonemap.phonemap.constants.Requests.FORCE_TASK;
 import static com.phonemap.phonemap.constants.Requests.TASK_ID;
+import static com.phonemap.phonemap.constants.Sockets.CODE_AVAILABLE;
 import static io.socket.emitter.Emitter.Listener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -49,26 +55,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Log.class})
+@PrepareForTest({Log.class, Message.class})
 public class SocketConnectionManagerTest {
+    private final String TEST_PHONE_ID = "test";
     @Mock Socket mockSocket;
     @Mock Bundle mockBundle;
     @Mock Messenger mockMessenger;
-
+    @Mock Message mockMessage;
     @Captor ArgumentCaptor<String> stringCaptor;
-    @Captor ArgumentCaptor<Emitter.Listener> listenerCaptor;
+    @Captor ArgumentCaptor<Emitter.Listener> connectCaptor;
+    @Captor ArgumentCaptor<Emitter.Listener> codeAvailableCaptor;
     @Captor ArgumentCaptor<JSONObject> payloadCaptor;
 
     @Before
     public void setup() {
         PowerMockito.mockStatic(Log.class);
+        PowerMockito.mockStatic(Message.class);
+        BDDMockito.given(Message.obtain(any(Handler.class), anyInt())).willReturn(mockMessage);
     }
 
     @Test
     public void testConstructorConnectsSocket() {
         new SocketConnectionManager(mockSocket);
         verify(mockSocket, times(1)).connect();
-        verify(mockSocket, times(7)).on(stringCaptor.capture(), listenerCaptor.capture());
+        verify(mockSocket, times(7)).on(stringCaptor.capture(), connectCaptor.capture());
     }
 
     @Test
@@ -137,37 +147,53 @@ public class SocketConnectionManagerTest {
 
     private Socket testSocket() {
         Socket mockSocket = Mockito.mock(Socket.class);
-        doReturn(null).when(mockSocket).on(eq(Socket.EVENT_CONNECT), listenerCaptor.capture());
+        doReturn(null).when(mockSocket).on(eq(Socket.EVENT_CONNECT), connectCaptor.capture());
+        doReturn(null).when(mockSocket).on(eq(CODE_AVAILABLE), codeAvailableCaptor.capture());
+
+
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                listenerCaptor.getValue().call();
+                connectCaptor.getValue().call();
                 return null;
             }
         }).when(mockSocket).connect();
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                codeAvailableCaptor.getValue().call();
+                return null;
+            }
+        }).when(mockSocket).send(CODE_AVAILABLE);
+
         return mockSocket;
     }
 
-    private SocketConnectionManager testSocketConnectionManager(final String TEST_PHONE_ID, final Socket mockSocket) {
+    private Bundle testBundle(final int preferredTask, final boolean autostartEnabled) {
+        final Bundle mockBundle = Mockito.mock(Bundle.class);
+        doNothing().when(mockBundle).putString(anyString(), anyString());
+        doNothing().when(mockBundle).putInt(anyString(), anyInt());
+        doNothing().when(mockBundle).putBoolean(anyString(), anyBoolean());
+        doReturn(preferredTask).when(mockBundle).get(TASK_ID);
+        doReturn(autostartEnabled).when(mockBundle).get(FORCE_TASK);
+        Set<String> keys = new HashSet<>();
+        keys.add(TASK_ID);
+        keys.add(FORCE_TASK);
+        doReturn(keys).when(mockBundle).keySet();
+        return mockBundle;
+    }
+
+    private SocketConnectionManager testSocketConnectionManager(final Socket mockSocket) {
         final int preferredTask = 1;
         final boolean autostartEnabled = true;
 
+        final Bundle mockBundle = testBundle(preferredTask, autostartEnabled);
+
         SocketConnectionManager socketConnectionManager = new SocketConnectionManager(mockSocket) {
             @Override
-            public Bundle emptyBundle() {
-                Bundle bundle = Mockito.mock(Bundle.class);
-                doNothing().when(bundle).putString(anyString(), anyString());
-                doNothing().when(bundle).putInt(anyString(), anyInt());
-                doNothing().when(bundle).putBoolean(anyString(), anyBoolean());
-                doReturn(preferredTask).when(bundle).get(TASK_ID);
-                doReturn(autostartEnabled).when(bundle).get(FORCE_TASK);
-
-                Set<String> keys = new HashSet<>();
-                keys.add(TASK_ID);
-                keys.add(FORCE_TASK);
-                doReturn(keys).when(bundle).keySet();
-
-                return bundle;
+            public Bundle EMPTY_BUNDLE() {
+                return mockBundle;
             }
         };
         socketConnectionManager.phone = new Phone(socketConnectionManager) {
@@ -192,12 +218,10 @@ public class SocketConnectionManagerTest {
 
     @Test
     public void makesCorrectServerCallOnInstantiation() throws JSONException {
-        final String TEST_PHONE_ID = "test";
-
         Socket mockSocket = testSocket();
         doReturn(true).when(mockSocket).connected();
 
-        SocketConnectionManager socketConnectionManager = testSocketConnectionManager(TEST_PHONE_ID, mockSocket);
+        SocketConnectionManager socketConnectionManager = testSocketConnectionManager(mockSocket);
         socketConnectionManager.addReadyRunner(mockMessenger);
 
         verify(mockSocket).on(eq(Socket.EVENT_CONNECT), Matchers.<Listener>any());
@@ -206,5 +230,15 @@ public class SocketConnectionManagerTest {
         assertEquals(payloadCaptor.getValue().getString(Sockets.ID), TEST_PHONE_ID);
         assertEquals(payloadCaptor.getValue().getInt(TASK_ID), 1);
         assertEquals(payloadCaptor.getValue().getBoolean(FORCE_TASK), true);
+    }
+
+    @Test
+    public void dispatchesAvailableRunnerWhenCodeAvailable() throws RemoteException, InterruptedException {
+        Socket mockSocket = testSocket();
+        doReturn(true).when(mockSocket).connected();
+        SocketConnectionManager socketConnectionManager = testSocketConnectionManager(mockSocket);
+        socketConnectionManager.addReadyRunner(mockMessenger);
+        mockSocket.send(CODE_AVAILABLE);
+        verify(mockMessenger, times(1)).send(mockMessage);
     }
 }

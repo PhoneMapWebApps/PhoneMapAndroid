@@ -134,7 +134,7 @@ public class SocketConnectionManager extends Service {
                     return;
                 }
 
-                Bundle bundle = emptyBundle();
+                Bundle bundle = EMPTY_BUNDLE();
                 bundle.putString(PATH, path);
                 bundle.putString(DATA, data);
                 bundle.putString(TASK_NAME, task_name);
@@ -159,9 +159,7 @@ public class SocketConnectionManager extends Service {
         this.socket.connect();
     }
 
-    public Bundle emptyBundle() {
-        return new Bundle();
-    }
+    public Bundle EMPTY_BUNDLE() { return new Bundle(); }
 
     public void setupSocketOnEvents(Socket socket) {
         socket.on(Socket.EVENT_CONNECT, connectListener);
@@ -194,7 +192,7 @@ public class SocketConnectionManager extends Service {
 
     private void requestMoreWork() {
         if (socket.connected() && !readyRunners.isEmpty()) {
-            Bundle bundle = emptyBundle();
+            Bundle bundle = EMPTY_BUNDLE();
             bundle.putInt(TASK_ID, preferences.preferredTask());
             bundle.putBoolean(FORCE_TASK, preferences.autostartEnabled());
 
