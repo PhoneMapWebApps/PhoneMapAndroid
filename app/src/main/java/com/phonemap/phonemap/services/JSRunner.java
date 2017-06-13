@@ -164,6 +164,8 @@ public class JSRunner extends Service {
         filter.addAction(Intent.ACTION_SHUTDOWN);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_POWER_CONNECTED);
 
         registerReceiver(shutdownReceiver, filter);
         registerIntentFilter();

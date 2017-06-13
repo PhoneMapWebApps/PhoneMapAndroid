@@ -30,8 +30,8 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="network"
-        android:title="Network">
+        android:key="power"
+        android:title="Power">
 
         <CheckBoxPreference
             android:defaultValue="true"

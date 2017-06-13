@@ -2,6 +2,7 @@ package com.phonemap.phonemap.services;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 
 public class Utils {
     public static boolean isServiceRunning(Context context, Class<?> serviceClass) {
@@ -12,5 +13,11 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static void startJSRunner(Context context) {
+        if (!isServiceRunning(context, JSRunner.class)) {
+            context.startService(new Intent(context, JSRunner.class));
+        }
     }
 }

@@ -29,6 +29,7 @@ import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
 import static com.phonemap.phonemap.services.Utils.isServiceRunning;
+import static com.phonemap.phonemap.services.Utils.startJSRunner;
 
 public class TaskListAdapter extends BaseAdapter {
     private final List<Task> tasks;
@@ -87,9 +88,7 @@ public class TaskListAdapter extends BaseAdapter {
                         holder.selectTask.setText(activity.getString(R.string.preferred_task));
                         editor.putInt(CURRENT_TASK, (int) holder.selectTask.getTag());
 
-                        if (!isServiceRunning(activity, JSRunner.class)) {
-                            activity.startService(new Intent(activity, JSRunner.class));
-                        }
+                        startJSRunner(activity);
                     }
 
                     editor.apply();

@@ -30,6 +30,7 @@ import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
+import static com.phonemap.phonemap.services.Utils.startJSRunner;
 
 public class MainActivity extends AppCompatActivity implements ServerListener {
 
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
 
         requestAPI.getTasks();
 
-        startService(new Intent(this, JSRunner.class));
+        startJSRunner(this);
         checkForUpdates();
     }
 
