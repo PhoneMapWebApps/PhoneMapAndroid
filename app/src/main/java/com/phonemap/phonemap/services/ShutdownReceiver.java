@@ -21,7 +21,7 @@ public class ShutdownReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String intendedAction = intent.getAction();
-        if  (service == null) {
+        if (service == null) {
             Log.i(LOG_TAG, "Wanted to send onDestroy but service isn't running");
         } else if (intendedAction.equals(Intent.ACTION_SHUTDOWN)) {
             service.emit(ON_DESTROY, true);

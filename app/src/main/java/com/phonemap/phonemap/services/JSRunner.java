@@ -47,25 +47,26 @@ import static com.phonemap.phonemap.constants.Sockets.PATH;
 
 public class JSRunner extends Service {
     private static final String LOG_TAG = "JSRunner";
-
-    private final ServiceExitListener exitListener = new ServiceExitListener() {
-        @Override
-        public void onExit(MicroService service, Integer exitCode) {
-            LocalBroadcastManager
-                    .getInstance(getApplicationContext())
-                    .sendBroadcast(new Intent(JSRUNNER_STOP_INTENT));
-            serviceRunning = false;
-            getDataAndCode();
-        }
-    };
-
+    private String data;
     private final EventListener readyListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             service.emit(ON_START, data);
         }
     };
+    private MicroService service;
+    private MessengerSender messengerSender;
+    private final EventListener returnListener = new EventListener() {
+        @Override
+        public void onEvent(MicroService service, String event, JSONObject payload) {
+            Bundle bundle = new Bundle();
+            bundle.putString(RETURN, payload.toString());
 
+            messengerSender.setMessage(COMPLETED_SUBTASK).setData(bundle).send();
+
+            service.getProcess().exit(0);
+        }
+    };
     private final ServiceStartListener startListener = new ServiceStartListener() {
         @Override
         public void onStart(MicroService service) {
@@ -73,22 +74,8 @@ public class JSRunner extends Service {
             service.addEventListener(RETURN, returnListener);
         }
     };
-
-    private String data;
-    private MicroService service;
-    private MessengerSender messengerSender;
     private ShutdownReceiver shutdownReceiver;
     private boolean serviceRunning = false;
-
-    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-             if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
-                getDataAndCode();
-            }
-        }
-    };
-
     private Messenger incomingMessageHandler = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -109,19 +96,24 @@ public class JSRunner extends Service {
             }
         }
     });
-
-    private final EventListener returnListener = new EventListener() {
+    private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
-        public void onEvent(MicroService service, String event, JSONObject payload) {
-            Bundle bundle = new Bundle();
-            bundle.putString(RETURN, payload.toString());
-
-            messengerSender.setMessage(COMPLETED_SUBTASK).setData(bundle).send();
-
-            service.getProcess().exit(0);
+        public void onExit(MicroService service, Integer exitCode) {
+            LocalBroadcastManager
+                    .getInstance(getApplicationContext())
+                    .sendBroadcast(new Intent(JSRUNNER_STOP_INTENT));
+            serviceRunning = false;
+            getDataAndCode();
         }
     };
-
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
+                getDataAndCode();
+            }
+        }
+    };
     private final ServiceErrorListener errorListener = new ServiceErrorListener() {
         @Override
         public void onError(MicroService service, Exception e) {

@@ -16,7 +16,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.R;
-import com.phonemap.phonemap.SettingsActivity;
 import com.phonemap.phonemap.TaskDescription;
 import com.phonemap.phonemap.objects.Task;
 
@@ -100,6 +99,8 @@ public class TaskListAdapter extends BaseAdapter {
                 public void onClick(View view) {
                     // ToDo: Fix serialization
                     Intent intent = new Intent(activity, TaskDescription.class);
+                    Task task = tasks.get(position);
+                    Log.i("TEST", task.getName());
                     intent.putExtra(TASK, tasks.get(position));
                     activity.startActivity(intent);
                 }

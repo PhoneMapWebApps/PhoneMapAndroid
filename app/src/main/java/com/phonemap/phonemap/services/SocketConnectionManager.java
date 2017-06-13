@@ -130,7 +130,7 @@ public class SocketConnectionManager extends Service {
                 try {
                     path = writeToFile(code, "code.js", getApplicationContext());
                 } catch (IOException e) {
-                    Log.e(LOG_TAG ,"Could not create or write to code.js\n(" + e.toString() + ")");
+                    Log.e(LOG_TAG, "Could not create or write to code.js\n(" + e.toString() + ")");
                     return;
                 }
 
@@ -159,7 +159,9 @@ public class SocketConnectionManager extends Service {
         this.socket.connect();
     }
 
-    public Bundle EMPTY_BUNDLE() { return new Bundle(); }
+    public Bundle EMPTY_BUNDLE() {
+        return new Bundle();
+    }
 
     public void setupSocketOnEvents(Socket socket) {
         socket.on(Socket.EVENT_CONNECT, connectListener);
@@ -186,7 +188,7 @@ public class SocketConnectionManager extends Service {
         return messenger.getBinder();
     }
 
-    private  Messenger getWaitingRunner() {
+    private Messenger getWaitingRunner() {
         return readyRunners.poll();
     }
 
@@ -279,7 +281,7 @@ public class SocketConnectionManager extends Service {
         for (String key : keys) {
             try {
                 json.put(key, bundle.get(key));
-            } catch(JSONException e) {
+            } catch (JSONException e) {
                 Log.e(LOG_TAG, "Cannot create JSONObject out of provided bundle");
             }
         }

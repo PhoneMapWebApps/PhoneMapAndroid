@@ -4,17 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,15 +22,12 @@ import com.phonemap.phonemap.services.JSRunner;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
-import static com.phonemap.phonemap.constants.Other.TASK;
-import static com.phonemap.phonemap.constants.Requests.TASK_DESCRIPTION;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
 import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
 
