@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static com.phonemap.phonemap.constants.API.ON_DESTROY;
 import static com.phonemap.phonemap.constants.API.ON_START;
 import static com.phonemap.phonemap.constants.API.READY;
 import static com.phonemap.phonemap.constants.API.RETURN;
@@ -173,8 +174,12 @@ public class JSRunner extends Service {
         super.onDestroy();
         unbindService(connection);
 
-        unregisterReceiver(shutdownReceiver);
         unregisterIntentFilter();
+
+        if (service != null) {
+            service.emit(ON_DESTROY, true);
+            unregisterReceiver(shutdownReceiver);
+        }
     }
 
     @Override

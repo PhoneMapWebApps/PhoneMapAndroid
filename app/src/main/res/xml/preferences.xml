@@ -1,42 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="General"
-        android:key="general">
+        android:key="general"
+        android:title="General">
 
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="autostart"
-            android:title="Autostart"
             android:summary="Select tasks automatically if the selected one is complete"
-            android:defaultValue="true"/>
+            android:title="Autostart" />
 
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="screen_on"
-            android:title="Run when screen is ON"
             android:summary="Disable if your phones becomes slow while the screen is ON"
-            android:defaultValue="true"/>
+            android:title="Run when screen is ON" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Network"
-        android:key="network">
+        android:key="network"
+        android:title="Network">
 
         <CheckBoxPreference
+            android:defaultValue="false"
             android:key="allow_mobile"
-            android:title="Download data on mobile network"
             android:summary="Might incur additional costs"
-            android:defaultValue="false"/>
+            android:title="Download data on mobile network" />
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Network"
-        android:key="network">
+        android:key="network"
+        android:title="Network">
 
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="only_connected"
-            android:title="Only run when connected to power"
             android:summary="Some tasks are very intensive and might use a lot of power"
-            android:defaultValue="true"/>
+            android:title="Only run when connected to power" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="control"
+        android:title="Control">
+
+        <Preference
+            android:key="@string/stop"
+            android:title="Stop background processes"
+            android:summary="Stops all background processes, no tasks will be executed until app is restarted or a new preferred task is selected" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -4,4 +4,5 @@
     <string name="select_task">Select Task</string>
     <string name="preferred_task">Preferred Task</string>
     <string name="no_task_running">No task running</string>
+    <string name="stop">stop</string>
 </resources>

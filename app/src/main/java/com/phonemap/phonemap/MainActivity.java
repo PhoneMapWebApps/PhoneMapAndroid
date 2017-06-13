@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     }
 
     private void checkForUpdates() {
-        // Remove this for store builds!
+        // ToDo: Remove this for store builds!
         UpdateManager.register(this);
     }
 
