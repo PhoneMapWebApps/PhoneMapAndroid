@@ -3,6 +3,7 @@ package com.phonemap.phonemap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
 
 import com.phonemap.phonemap.objects.Task;
 
@@ -32,7 +33,14 @@ public class TaskDescription extends AppCompatActivity {
     }
 
     private void loadUIWithTask(Task task) {
+        int completedPercentage = (task.getCompletedSubtasks() / task.getTotalSubtasks()) * 100;
 
+        ((TextView) findViewById(R.id.task_name)).setText(task.getName());
+        ((TextView) findViewById(R.id.author_name)).setText(task.getOwnerFullname());
+        ((TextView) findViewById(R.id.organization)).setText(task.getOwnerOrg());
+        ((TextView) findViewById(R.id.submitted)).setText(task.getTimeSubmitted());
+        //((TextView) findViewById(R.id.progress)).setText(completedPercentage);
+        ((TextView) findViewById(R.id.description)).setText(task.getDescription());
     }
 
     private void setupUI() {
