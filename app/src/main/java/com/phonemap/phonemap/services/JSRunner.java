@@ -7,14 +7,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.phonemap.phonemap.constants.Preferences;
 
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
@@ -49,14 +57,18 @@ import static com.phonemap.phonemap.constants.Sockets.PATH;
 public class JSRunner extends Service {
     private static final String LOG_TAG = "JSRunner";
     private String data;
+    private MicroService service;
+    private MessengerSender messengerSender;
+    private ShutdownReceiver shutdownReceiver;
+    private boolean serviceRunning = false;
+
     private final EventListener readyListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
             service.emit(ON_START, data);
         }
     };
-    private MicroService service;
-    private MessengerSender messengerSender;
+
     private final EventListener returnListener = new EventListener() {
         @Override
         public void onEvent(MicroService service, String event, JSONObject payload) {
@@ -68,6 +80,7 @@ public class JSRunner extends Service {
             service.getProcess().exit(0);
         }
     };
+
     private final ServiceStartListener startListener = new ServiceStartListener() {
         @Override
         public void onStart(MicroService service) {
@@ -75,8 +88,7 @@ public class JSRunner extends Service {
             service.addEventListener(RETURN, returnListener);
         }
     };
-    private ShutdownReceiver shutdownReceiver;
-    private boolean serviceRunning = false;
+
     private Messenger incomingMessageHandler = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -97,6 +109,7 @@ public class JSRunner extends Service {
             }
         }
     });
+
     private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
@@ -107,14 +120,7 @@ public class JSRunner extends Service {
             getDataAndCode();
         }
     };
-    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
-                getDataAndCode();
-            }
-        }
-    };
+
     private final ServiceErrorListener errorListener = new ServiceErrorListener() {
         @Override
         public void onError(MicroService service, Exception e) {
@@ -133,6 +139,15 @@ public class JSRunner extends Service {
             LocalBroadcastManager
                     .getInstance(getApplicationContext())
                     .sendBroadcast(new Intent(JSRUNNER_FAILED_EXECUTION));
+        }
+    };
+
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
+                getDataAndCode();
+            }
         }
     };
 
@@ -166,7 +181,9 @@ public class JSRunner extends Service {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
+        filter.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
 
+        shutdownReceiver = new ShutdownReceiver(service, this);
         registerReceiver(shutdownReceiver, filter);
         registerIntentFilter();
     }
@@ -221,7 +238,6 @@ public class JSRunner extends Service {
 
         serviceRunning = true;
         service.start();
-        shutdownReceiver = new ShutdownReceiver(service);
 
         Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
         intent.putExtra(TASK_NAME, task_name);
@@ -231,7 +247,15 @@ public class JSRunner extends Service {
                 .sendBroadcast(intent);
     }
 
-    private void getDataAndCode() {
+    public void getDataAndCode() {
+        Preferences preferences = new Preferences(getApplicationContext());
+
+        if (isScreenOn() && !preferences.enableWhenScreenOn() ||
+                !isCharging() && !preferences.enableWhenNoPower() ||
+                !isConnectedViaWifi() && !preferences.enableOnMobile()) {
+            return;
+        }
+
         if (!serviceRunning) {
             messengerSender.setMessage(NEW_SUBTASK).sendRepliesTo(incomingMessageHandler).send();
         }
@@ -239,5 +263,30 @@ public class JSRunner extends Service {
 
     URI convertPathToURI(String path) throws URISyntaxException {
         return new URI(FILE_PREFIX + path);
+    }
+
+
+    private boolean isScreenOn() {
+        PowerManager powerManager = (PowerManager)
+                getApplicationContext().getSystemService(POWER_SERVICE);
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH
+                && powerManager.isInteractive()
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH
+                && powerManager.isScreenOn();
+    }
+
+    private boolean isCharging() {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = getApplicationContext().registerReceiver(null, filter);
+        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        return status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                status == BatteryManager.BATTERY_STATUS_FULL;
+    }
+
+    private boolean isConnectedViaWifi() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return mWifi.isConnected();
     }
 }

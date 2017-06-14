@@ -16,30 +16,32 @@ public class Preferences {
     public static final String ALLOW_MOBILE = "allow_mobile";
     public static final String ONLY_CONNECTED = "only_connected";
     private Context inContext;
-    private SharedPreferences defaultPreference;
 
     public Preferences(Context inContext) {
         this.inContext = inContext;
-        this.defaultPreference = PreferenceManager.getDefaultSharedPreferences(inContext);
     }
 
     public int preferredTask() {
         return inContext.getSharedPreferences(PREFERENCES, MODE_PRIVATE).getInt(CURRENT_TASK, INVALID_TASK_ID);
     }
 
+    public SharedPreferences getDefaultPreference() {
+        return PreferenceManager.getDefaultSharedPreferences(inContext);
+    }
+
     public boolean autostartEnabled() {
-        return !defaultPreference.getBoolean(AUTOSTART, true);
+        return !getDefaultPreference().getBoolean(AUTOSTART, true);
     }
 
     public boolean enableWhenScreenOn() {
-        return !defaultPreference.getBoolean(SCREEN_ON, true);
+        return getDefaultPreference().getBoolean(SCREEN_ON, true);
     }
 
     public boolean enableOnMobile() {
-        return defaultPreference.getBoolean(ALLOW_MOBILE, false);
+        return getDefaultPreference().getBoolean(ALLOW_MOBILE, false);
     }
 
     public boolean enableWhenNoPower() {
-        return !defaultPreference.getBoolean(ONLY_CONNECTED, true);
+        return !getDefaultPreference().getBoolean(ONLY_CONNECTED, true);
     }
 }

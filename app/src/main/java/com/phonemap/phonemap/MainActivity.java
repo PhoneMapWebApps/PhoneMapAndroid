@@ -17,7 +17,6 @@ import com.phonemap.phonemap.adapters.TaskListAdapter;
 import com.phonemap.phonemap.objects.Task;
 import com.phonemap.phonemap.requests.RequestAPI;
 import com.phonemap.phonemap.requests.ServerListener;
-import com.phonemap.phonemap.services.JSRunner;
 
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;

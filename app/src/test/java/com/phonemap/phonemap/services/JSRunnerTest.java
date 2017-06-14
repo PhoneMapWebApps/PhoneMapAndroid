@@ -34,8 +34,8 @@ public class JSRunnerTest {
         mockService = mock(MicroService.class);
         mockIntent = mock(Intent.class);
 
-        shutdownReceiver = new ShutdownReceiver(mockService);
         jsRunner = new JSRunner(mockService);
+        shutdownReceiver = new ShutdownReceiver(mockService, jsRunner);
     }
 
     @Test
