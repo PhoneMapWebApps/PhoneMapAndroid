@@ -1,8 +1,11 @@
 package com.phonemap.phonemap.constants;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
+import java.net.URISyntaxException;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -15,10 +18,29 @@ public class Preferences {
     private static final String AUTOSTART = "autostart";
     public static final String ALLOW_MOBILE = "allow_mobile";
     public static final String ONLY_CONNECTED = "only_connected";
+    public static final String LAST_INTENT = "last_intent";
     private Context inContext;
 
     public Preferences(Context inContext) {
         this.inContext = inContext;
+    }
+
+    public SharedPreferences getSharedPref() {
+        return inContext.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
+    }
+
+    public void saveIntent(Intent intent) {
+        getSharedPref().edit().putString(LAST_INTENT, intent.toURI()).commit();
+    }
+
+    public Intent getLastIntent() {
+        String uri = getSharedPref().getString(LAST_INTENT, "");
+
+        try {
+            return Intent.parseUri(uri, 0);
+        } catch (URISyntaxException e) {
+            return new Intent();
+        }
     }
 
     public int preferredTask() {

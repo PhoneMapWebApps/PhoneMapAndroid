@@ -1,15 +1,19 @@
 package com.phonemap.phonemap;
 
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.phonemap.phonemap.services.JSRunner;
 
+import static com.phonemap.phonemap.constants.Intents.PREFERENCES_CHANGED;
 import static com.phonemap.phonemap.services.Utils.isServiceRunning;
 
 public class SettingsActivity extends PreferenceActivity {
@@ -21,6 +25,7 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment
+            implements SharedPreferences.OnSharedPreferenceChangeListener
     {
         @Override
         public void onCreate(final Bundle savedInstanceState)
@@ -45,6 +50,26 @@ public class SettingsActivity extends PreferenceActivity {
                     return true;
                 }
             });
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+        }
+
+        @Override
+        public void onPause() {
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+            super.onPause();
+        }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
+        {
+            Intent intent = new Intent(PREFERENCES_CHANGED);
+            LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
         }
     }
 }

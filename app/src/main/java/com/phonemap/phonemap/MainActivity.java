@@ -8,12 +8,14 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
+import com.phonemap.phonemap.constants.Preferences;
 import com.phonemap.phonemap.objects.Task;
 import com.phonemap.phonemap.requests.RequestAPI;
 import com.phonemap.phonemap.requests.ServerListener;
@@ -91,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     protected void onResume() {
         super.onResume();
         checkForCrashes();
+
+        Preferences preferences = new Preferences(getApplicationContext());
+        Intent intent = preferences.getLastIntent();
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
         requestAPI.getTasks();
     }
 

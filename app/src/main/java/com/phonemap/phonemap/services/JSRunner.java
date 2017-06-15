@@ -43,6 +43,7 @@ import static com.phonemap.phonemap.constants.API.RETURN;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_FAILED_EXECUTION;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STARTED_INTENT;
 import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
+import static com.phonemap.phonemap.constants.Intents.PREFERENCES_CHANGED;
 import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
 import static com.phonemap.phonemap.constants.Other.FILE_PREFIX;
 import static com.phonemap.phonemap.constants.Requests.TASK_NAME;
@@ -113,9 +114,7 @@ public class JSRunner extends Service {
     private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
-            LocalBroadcastManager
-                    .getInstance(getApplicationContext())
-                    .sendBroadcast(new Intent(JSRUNNER_STOP_INTENT));
+            broadcastState(new Intent(JSRUNNER_STOP_INTENT));
             serviceRunning = false;
             getDataAndCode();
         }
@@ -136,9 +135,7 @@ public class JSRunner extends Service {
             messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
             getDataAndCode();
 
-            LocalBroadcastManager
-                    .getInstance(getApplicationContext())
-                    .sendBroadcast(new Intent(JSRUNNER_FAILED_EXECUTION));
+            broadcastState(new Intent(JSRUNNER_FAILED_EXECUTION));
         }
     };
 
@@ -146,6 +143,8 @@ public class JSRunner extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
+                getDataAndCode();
+            } else if (intent.getAction().equals(PREFERENCES_CHANGED)) {
                 getDataAndCode();
             }
         }
@@ -191,14 +190,15 @@ public class JSRunner extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbindService(connection);
-
-        unregisterIntentFilter();
 
         if (service != null) {
             service.emit(ON_DESTROY, true);
-            unregisterReceiver(shutdownReceiver);
         }
+
+        unbindService(connection);
+
+        unregisterIntentFilter();
+        unregisterReceiver(shutdownReceiver);
     }
 
     @Override
@@ -219,6 +219,7 @@ public class JSRunner extends Service {
     private void registerIntentFilter() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(UPDATED_PREFERRED_TASK);
+        filter.addAction(PREFERENCES_CHANGED);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter);
     }
 
@@ -242,9 +243,7 @@ public class JSRunner extends Service {
         Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
         intent.putExtra(TASK_NAME, task_name);
 
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .sendBroadcast(intent);
+        broadcastState(intent);
     }
 
     public void getDataAndCode() {
@@ -288,5 +287,14 @@ public class JSRunner extends Service {
                 getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         return mWifi.isConnected();
+    }
+
+    private void broadcastState(Intent intent) {
+        Preferences preferences = new Preferences(getApplicationContext());
+        preferences.saveIntent(intent);
+
+        LocalBroadcastManager
+                .getInstance(getApplicationContext())
+                .sendBroadcast(intent);
     }
 }
