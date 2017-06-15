@@ -12,7 +12,8 @@ public class Task implements Serializable {
     private final String ownerOrg;
     private final String timeSubmitted;
 
-    public Task(String name, String description, int id, int totalSubtasks, int completedSubtasks, String ownerFullname, String ownerOrg, String timeSubmitted) {
+    public Task(String name, String description, int id, int totalSubtasks, int completedSubtasks,
+                String ownerFullname, String ownerOrg, String timeSubmitted) {
         this.name = name;
         this.description = description;
         this.id = id;
@@ -53,5 +54,9 @@ public class Task implements Serializable {
 
     public String getTimeSubmitted() {
         return timeSubmitted;
+    }
+
+    public String getCompletedPercentage() {
+        return String.valueOf(getCompletedSubtasks() * 100 / getTotalSubtasks()) + "%";
     }
 }
