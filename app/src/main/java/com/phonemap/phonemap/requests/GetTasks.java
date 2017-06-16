@@ -55,7 +55,7 @@ public class GetTasks implements AsyncTaskListener {
         }
 
         if (tasks.isEmpty()) {
-            Task task = new Task("Task name", "Task description", -1, 10, 1, "Fico", "Parlament", "Silny datum tu bude");
+            Task task = new Task("Task name", "Task description MORE MORE MORE MORE MORE MORE MORE MORE MORE MORE", 0, 10, 1, "Fico", "Parlament", "Silny datum tu bude");
             tasks.add(task);
         }
 

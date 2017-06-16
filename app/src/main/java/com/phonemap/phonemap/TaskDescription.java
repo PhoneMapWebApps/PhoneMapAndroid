@@ -10,6 +10,7 @@ import com.phonemap.phonemap.objects.Task;
 import static com.phonemap.phonemap.constants.Other.TASK;
 
 public class TaskDescription extends AppCompatActivity {
+    private Task task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,11 +26,13 @@ public class TaskDescription extends AppCompatActivity {
                 // ToDo: Report that no data about task have been passed
                 finish();
             } else {
-                loadUIWithTask((Task) extras.getSerializable(TASK));
+                task = (Task) extras.getSerializable(TASK);
             }
         } else {
-            loadUIWithTask((Task) savedInstanceState.getSerializable(TASK));
+            task= (Task) savedInstanceState.getSerializable(TASK);
         }
+
+        loadUIWithTask(task);
     }
 
     private void loadUIWithTask(Task task) {

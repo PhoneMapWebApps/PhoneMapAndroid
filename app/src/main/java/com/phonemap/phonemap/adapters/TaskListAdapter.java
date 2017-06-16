@@ -105,7 +105,6 @@ public class TaskListAdapter extends BaseAdapter {
                     // ToDo: Fix serialization
                     Intent intent = new Intent(activity, TaskDescription.class);
                     Task task = tasks.get(position);
-                    Log.i("TEST", task.getName());
                     intent.putExtra(TASK, tasks.get(position));
                     activity.startActivity(intent);
                 }
