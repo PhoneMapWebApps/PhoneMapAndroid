@@ -36,12 +36,12 @@ public class TaskDescription extends AppCompatActivity {
     }
 
     private void loadUIWithTask(Task task) {
-        ((TextView) findViewById(R.id.task_name)).append(task.getName());
-        ((TextView) findViewById(R.id.author_name)).append(task.getOwnerFullname());
-        ((TextView) findViewById(R.id.organization)).append(task.getOwnerOrg());
-        ((TextView) findViewById(R.id.submitted)).append(task.getTimeSubmitted());
-        ((TextView) findViewById(R.id.progress)).append(task.getCompletedPercentage());
-        ((TextView) findViewById(R.id.description)).append(task.getDescription());
+        ((TextView) findViewById(R.id.task_name)).setText(task.getName());
+        ((TextView) findViewById(R.id.author_name)).setText(task.getOwnerFullname());
+        ((TextView) findViewById(R.id.organization)).setText(task.getOwnerOrg());
+        ((TextView) findViewById(R.id.submitted)).setText(task.getTimeSubmitted());
+        ((TextView) findViewById(R.id.progress)).setText(task.getCompletedPercentage());
+        ((TextView) findViewById(R.id.description)).setText(task.getDescription());
     }
 
     private void setupUI() {

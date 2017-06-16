@@ -119,7 +119,7 @@ public class TaskListAdapter extends BaseAdapter {
         Task task = tasks.get(position);
 
         holder.name.setText(task.getName());
-        holder.description.setText(task.getDescription());
+        holder.description.setText(task.getDescriptionUnformatted());
         holder.selectTask.setTag(task.getId());
 
         holder.description.post(new Runnable() {

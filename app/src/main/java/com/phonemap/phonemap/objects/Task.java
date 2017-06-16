@@ -1,5 +1,10 @@
 package com.phonemap.phonemap.objects;
 
+import android.os.Build;
+import android.text.Html;
+import android.text.Spanned;
+import android.util.Log;
+
 import java.io.Serializable;
 
 public class Task implements Serializable {
@@ -28,12 +33,16 @@ public class Task implements Serializable {
         return id;
     }
 
-    public String getDescription() {
+    public String getName() {
+        return name;
+    }
+
+    public String getDescriptionUnformatted() {
         return description;
     }
 
-    public String getName() {
-        return name;
+    public Spanned getDescription() {
+        return formatPrefix("Description", description);
     }
 
     public int getTotalSubtasks() {
@@ -44,19 +53,33 @@ public class Task implements Serializable {
         return completedSubtasks;
     }
 
-    public String getOwnerFullname() {
-        return ownerFullname;
+    public Spanned getOwnerFullname() {
+        return formatPrefix("Name", ownerFullname);
     }
 
-    public String getOwnerOrg() {
-        return ownerOrg;
+    public Spanned getOwnerOrg() {
+        return formatPrefix("Organization", ownerOrg);
     }
 
-    public String getTimeSubmitted() {
-        return timeSubmitted;
+    public Spanned getTimeSubmitted() {
+        return formatPrefix("Time Submitted", timeSubmitted);
     }
 
-    public String getCompletedPercentage() {
-        return String.valueOf(getCompletedSubtasks() * 100 / getTotalSubtasks()) + "%";
+    public Spanned getCompletedPercentage() {
+        return formatPrefix("Total Progress",  String.valueOf(getCompletedSubtasks() * 100 / getTotalSubtasks()) + "%");
+    }
+
+    private Spanned formatPrefix(String prefix, String text) {
+        String formatted = "<font color=black><b>" + prefix + ": </b></font>" + fixNewLine(text);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Html.fromHtml(formatted, 0);
+        } else {
+            return Html.fromHtml(formatted);
+        }
+    }
+
+    private String fixNewLine(String string) {
+        return string.replaceAll("\n", "<br />");
     }
 }
