@@ -53,6 +53,13 @@ import static com.phonemap.phonemap.constants.Sockets.PATH;
 
 public class JSRunner extends Service {
     private static final String LOG_TAG = "JSRunner";
+    private final ServiceStartListener startListener = new ServiceStartListener() {
+        @Override
+        public void onStart(MicroService service) {
+            service.addEventListener(READY, readyListener);
+            service.addEventListener(RETURN, returnListener);
+        }
+    };
     private String data;
     private final EventListener readyListener = new EventListener() {
         @Override
@@ -73,13 +80,6 @@ public class JSRunner extends Service {
             service.getProcess().exit(0);
         }
     };
-    private final ServiceStartListener startListener = new ServiceStartListener() {
-        @Override
-        public void onStart(MicroService service) {
-            service.addEventListener(READY, readyListener);
-            service.addEventListener(RETURN, returnListener);
-        }
-    };
     private ShutdownReceiver shutdownReceiver;
     private boolean serviceRunning = false;
     private Messenger incomingMessageHandler = new Messenger(new Handler() {
@@ -96,7 +96,7 @@ public class JSRunner extends Service {
                     }
                     break;
                 case NEW_TASK:
-                    getDataAndCode();
+                    requestNewSubtask();
                 default:
                     super.handleMessage(msg);
             }
@@ -108,7 +108,7 @@ public class JSRunner extends Service {
         public void onExit(MicroService service, Integer exitCode) {
             broadcastState(new Intent(JSRUNNER_STOP_INTENT));
             serviceRunning = false;
-            getDataAndCode();
+            requestNewSubtask();
         }
     };
 
@@ -125,7 +125,7 @@ public class JSRunner extends Service {
 
             serviceRunning = false;
             messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
-            getDataAndCode();
+            requestNewSubtask();
 
             broadcastState(new Intent(JSRUNNER_FAILED_EXECUTION));
         }
@@ -135,9 +135,9 @@ public class JSRunner extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
-                getDataAndCode();
+                requestNewSubtask();
             } else if (intent.getAction().equals(PREFERENCES_CHANGED)) {
-                getDataAndCode();
+                requestNewSubtask();
             }
         }
     };
@@ -145,7 +145,7 @@ public class JSRunner extends Service {
     private ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             messengerSender = new MessengerSender(new Messenger(service));
-            getDataAndCode();
+            requestNewSubtask();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -238,11 +238,11 @@ public class JSRunner extends Service {
         broadcastState(intent);
     }
 
-    public void getDataAndCode() {
+    public void requestNewSubtask() {
         Preferences preferences = new Preferences(getApplicationContext());
         Phone phone = new Phone(getApplicationContext());
 
-        if (preferences.satisfied(phone)) {
+        if (!preferences.satisfied(phone)) {
             return;
         }
 

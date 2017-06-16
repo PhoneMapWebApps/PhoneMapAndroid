@@ -47,7 +47,7 @@ public class JSRunnerTest {
     }
 
     @Test
-    public void canGetDataAndCode() {
+    public void canRequestNewSubtask() {
 
     }
 }

@@ -42,7 +42,7 @@ public class ShutdownReceiver extends BroadcastReceiver {
                 intendedAction.equals(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION) &&
                         intendedAction.equals(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION) &&
                         !intent.getBooleanExtra(WifiManager.EXTRA_SUPPLICANT_CONNECTED, false)) {
-            runner.getDataAndCode();
+            runner.requestNewSubtask();
         }
     }
 }
