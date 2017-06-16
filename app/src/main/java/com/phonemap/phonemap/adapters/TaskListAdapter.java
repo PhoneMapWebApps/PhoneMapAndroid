@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -104,7 +106,6 @@ public class TaskListAdapter extends BaseAdapter {
                 public void onClick(View view) {
                     // ToDo: Fix serialization
                     Intent intent = new Intent(activity, TaskDescription.class);
-                    Task task = tasks.get(position);
                     intent.putExtra(TASK, tasks.get(position));
                     activity.startActivity(intent);
                 }
@@ -119,6 +120,23 @@ public class TaskListAdapter extends BaseAdapter {
         holder.name.setText(task.getName());
         holder.description.setText(task.getDescription());
         holder.selectTask.setTag(task.getId());
+
+        holder.description.post(new Runnable() {
+            @Override
+            public void run() {
+                int lineCount = holder.description.getLayout().getLineCount();
+                int lineEndIndex = holder.description.getLayout().getLineEnd(lineCount - 1);
+                String expandText = "Read more...";
+
+                String text = holder.description.getText().subSequence(0, lineEndIndex - expandText.length() + 1) + " ";
+                holder.description.setText(text);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + expandText + "</font>", 0));
+                } else {
+                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + expandText + "</font>"));
+                }
+            }
+        });
 
         SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
 
