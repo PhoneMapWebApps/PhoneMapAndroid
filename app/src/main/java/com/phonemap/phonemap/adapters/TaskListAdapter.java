@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -67,15 +68,15 @@ public class TaskListAdapter extends BaseAdapter {
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.name);
             holder.description = (TextView) convertView.findViewById(R.id.description);
-            holder.selectTask = (Button) convertView.findViewById(R.id.select_task);
+            holder.selectTask = (CheckBox) convertView.findViewById(R.id.select_task);
 
             holder.selectTask.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     for (int i = 0; i < listView.getChildCount(); i++) {
                         RelativeLayout layout = (RelativeLayout) listView.getChildAt(i);
-                        Button button = (Button) layout.findViewById(R.id.select_task);
-                        button.setText(activity.getString(R.string.select_task));
+                        CheckBox checkBox = (CheckBox) layout.findViewById(R.id.select_task);
+                        checkBox.setChecked(false);
                     }
 
                     SharedPreferences preferences =
@@ -84,16 +85,16 @@ public class TaskListAdapter extends BaseAdapter {
 
 
                     if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == (int) holder.selectTask.getTag()) {
-                        holder.selectTask.setText(activity.getString(R.string.select_task));
+                        holder.selectTask.setChecked(false);
                         editor.putInt(CURRENT_TASK, INVALID_TASK_ID);
+                        editor.apply();
                     } else {
-                        holder.selectTask.setText(activity.getString(R.string.preferred_task));
+                        holder.selectTask.setChecked(true);
                         editor.putInt(CURRENT_TASK, (int) holder.selectTask.getTag());
+                        editor.apply();
 
                         startJSRunner(activity);
                     }
-
-                    editor.apply();
 
                     Intent intent = new Intent(UPDATED_PREFERRED_TASK);
                     LocalBroadcastManager.getInstance(activity).sendBroadcast(intent);
@@ -126,14 +127,18 @@ public class TaskListAdapter extends BaseAdapter {
             public void run() {
                 int lineCount = holder.description.getLayout().getLineCount();
                 int lineEndIndex = holder.description.getLayout().getLineEnd(lineCount - 1);
-                String expandText = "Read more...";
+                String readMore = activity.getString(R.string.read_more);
+                String dots = "... ";
 
-                String text = holder.description.getText().subSequence(0, lineEndIndex - expandText.length() + 1) + " ";
+                int offset = lineEndIndex - readMore.length() - dots.length();
+
+
+                String text = String.valueOf(holder.description.getText().subSequence(0, offset)) + dots;
                 holder.description.setText(text);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + expandText + "</font>", 0));
+                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>", 0));
                 } else {
-                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + expandText + "</font>"));
+                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>"));
                 }
             }
         });
@@ -141,7 +146,7 @@ public class TaskListAdapter extends BaseAdapter {
         SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
 
         if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getId()) {
-            holder.selectTask.setText(activity.getString(R.string.preferred_task));
+            holder.selectTask.setChecked(true);
         }
 
         return convertView;
@@ -150,6 +155,6 @@ public class TaskListAdapter extends BaseAdapter {
     private static class ViewHolder {
         TextView name;
         TextView description;
-        Button selectTask;
+        CheckBox selectTask;
     }
 }

@@ -17,7 +17,6 @@
         android:layout_toRightOf="@+id/imageView"
         android:gravity="center_vertical"
         android:paddingLeft="6dp"
-        android:text="Protein Folding"
         android:textAppearance="@android:style/TextAppearance.Material.Title" />
 
     <TextView
@@ -33,16 +32,15 @@
         android:paddingLeft="6dp"
         android:textAppearance="@android:style/TextAppearance.Material.Small" />
 
-    <Button
+    <CheckBox
         android:id="@+id/select_task"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:text="@string/select_task"
-        android:paddingLeft="8dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true" />
 
     <ImageView
         android:id="@+id/imageView"

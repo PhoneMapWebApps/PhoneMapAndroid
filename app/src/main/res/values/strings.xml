@@ -5,4 +5,5 @@
     <string name="preferred_task">Preferred Task</string>
     <string name="no_task_running">No task running</string>
     <string name="stop">stop</string>
+    <string name="read_more">Read more</string>
 </resources>
