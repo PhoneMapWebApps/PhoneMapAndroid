@@ -2,7 +2,6 @@ package com.phonemap.phonemap.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -53,13 +52,6 @@ import static com.phonemap.phonemap.constants.Sockets.PATH;
 
 public class JSRunner extends Service {
     private static final String LOG_TAG = "JSRunner";
-    private final ServiceStartListener startListener = new ServiceStartListener() {
-        @Override
-        public void onStart(MicroService service) {
-            service.addEventListener(READY, readyListener);
-            service.addEventListener(RETURN, returnListener);
-        }
-    };
     private String data;
     private final EventListener readyListener = new EventListener() {
         @Override
@@ -78,6 +70,13 @@ public class JSRunner extends Service {
             messengerSender.setMessage(COMPLETED_SUBTASK).setData(bundle).send();
 
             service.getProcess().exit(0);
+        }
+    };
+    private final ServiceStartListener startListener = new ServiceStartListener() {
+        @Override
+        public void onStart(MicroService service) {
+            service.addEventListener(READY, readyListener);
+            service.addEventListener(RETURN, returnListener);
         }
     };
     private ShutdownReceiver shutdownReceiver;
@@ -102,7 +101,6 @@ public class JSRunner extends Service {
             }
         }
     });
-
     private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
@@ -142,17 +140,7 @@ public class JSRunner extends Service {
         }
     };
 
-    private ServiceConnection connection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            messengerSender = new MessengerSender(new Messenger(service));
-            requestNewSubtask();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            Log.e(LOG_TAG, "SocketConnectionManager stopped unexpectedly.");
-            stopSelf();
-        }
-    };
+    private ServiceConnection connection = new SocketServiceConnection(this);
 
     public JSRunner() {
     }
@@ -236,6 +224,10 @@ public class JSRunner extends Service {
         intent.putExtra(TASK_NAME, task_name);
 
         broadcastState(intent);
+    }
+
+    public void setMessengerSender(MessengerSender messengerSender) {
+        this.messengerSender = messengerSender;
     }
 
     public void requestNewSubtask() {

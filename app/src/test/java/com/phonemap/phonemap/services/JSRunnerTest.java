@@ -45,9 +45,4 @@ public class JSRunnerTest {
         assertTrue(uri.toString().contains("code.js"));
         assertTrue(uri.toString().contains("file://"));
     }
-
-    @Test
-    public void canRequestNewSubtask() {
-
-    }
 }
