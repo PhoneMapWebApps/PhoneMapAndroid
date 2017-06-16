@@ -56,8 +56,8 @@ public class Preferences {
     }
 
     public boolean satisfied(Phone phone) {
-        return phone.isScreenOn() && !getDefaultPreference().getBoolean(SCREEN_ON, false) ||
+        return !(phone.isScreenOn() && !getDefaultPreference().getBoolean(SCREEN_ON, false) ||
                 !phone.isCharging() && !getDefaultPreference().getBoolean(RUN_DISCONNECTED, false) ||
-                !phone.isConnectedViaWifi() && !getDefaultPreference().getBoolean(ALLOW_MOBILE, false);
+                !phone.isConnectedViaWifi() && !getDefaultPreference().getBoolean(ALLOW_MOBILE, false));
     }
 }
