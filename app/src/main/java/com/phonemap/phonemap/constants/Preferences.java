@@ -14,9 +14,9 @@ public class Preferences {
 
     public static final String CURRENT_TASK = "current_task";
     public static final int INVALID_TASK_ID = -1;
-    private static final String SCREEN_ON = "screen_on";
+    private static final String RUN_WHEN_SCREEN_ON = "screen_on";
     private static final String ALLOW_MOBILE = "allow_mobile";
-    private static final String RUN_DISCONNECTED = "run_disconnected";
+    private static final String RUN_WHEN_DISCONNECTED = "run_disconnected";
     private static final String LAST_INTENT = "last_intent";
     private static final String AUTOSTART = "autostart";
     private Context inContext;
@@ -56,8 +56,8 @@ public class Preferences {
     }
 
     public boolean satisfied(Phone phone) {
-        return !(phone.isScreenOn() && !getDefaultPreference().getBoolean(SCREEN_ON, false) ||
-                !phone.isCharging() && !getDefaultPreference().getBoolean(RUN_DISCONNECTED, false) ||
+        return !(phone.isScreenOn() && !getDefaultPreference().getBoolean(RUN_WHEN_SCREEN_ON, false) ||
+                !phone.isCharging() && !getDefaultPreference().getBoolean(RUN_WHEN_DISCONNECTED, false) ||
                 !phone.isConnectedViaWifi() && !getDefaultPreference().getBoolean(ALLOW_MOBILE, false));
     }
 }
