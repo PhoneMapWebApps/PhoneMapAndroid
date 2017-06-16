@@ -74,6 +74,7 @@ public class SocketConnectionManager extends Service {
             printArgs(args);
         }
     };
+
     final Listener noTaskListener = new Listener() {
         @Override
         public void call(Object... args) {
@@ -82,22 +83,26 @@ public class SocketConnectionManager extends Service {
                     .sendBroadcast(new Intent(NO_TASKS));
         }
     };
+
     private final BlockingQueue<Messenger> readyRunners = new LinkedBlockingQueue<>();
+    public Phone phone = new Phone(this);
+    public Preferences preferences = new Preferences(this);
+    private Socket socket;
+
     final Listener codeAvailableListener = new Listener() {
         @Override
         public void call(Object... args) {
             new MessengerSender(getWaitingRunner()).setMessage(NEW_TASK).send();
         }
     };
-    public Phone phone = new Phone(this);
-    public Preferences preferences = new Preferences(this);
-    private Socket socket;
+
     final Listener connectListener = new Listener() {
         @Override
         public void call(Object... args) {
             requestMoreWork();
         }
     };
+
     private final Messenger messenger = new Messenger(new Handler() {
         @Override
         public void handleMessage(Message message) {
@@ -116,6 +121,7 @@ public class SocketConnectionManager extends Service {
             }
         }
     });
+
     final Listener setCodeListener = new Listener() {
         @Override
         public void call(Object... args) {

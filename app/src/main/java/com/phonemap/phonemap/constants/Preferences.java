@@ -17,7 +17,7 @@ public class Preferences {
     public static final int INVALID_TASK_ID = -1;
     private static final String AUTOSTART = "autostart";
     public static final String ALLOW_MOBILE = "allow_mobile";
-    public static final String ONLY_CONNECTED = "only_connected";
+    public static final String RUN_DISCONNECTED = "run_disconnected";
     public static final String LAST_INTENT = "last_intent";
     private Context inContext;
 
@@ -56,7 +56,7 @@ public class Preferences {
     }
 
     public boolean enableWhenScreenOn() {
-        return getDefaultPreference().getBoolean(SCREEN_ON, true);
+        return getDefaultPreference().getBoolean(SCREEN_ON, false);
     }
 
     public boolean enableOnMobile() {
@@ -64,6 +64,6 @@ public class Preferences {
     }
 
     public boolean enableWhenNoPower() {
-        return !getDefaultPreference().getBoolean(ONLY_CONNECTED, true);
+        return getDefaultPreference().getBoolean(RUN_DISCONNECTED, false);
     }
 }

@@ -11,7 +11,7 @@
             android:title="Autostart" />
 
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="screen_on"
             android:summary="Disable if your phones becomes slow while the screen is ON"
             android:title="Run when screen is ON" />
@@ -34,10 +34,10 @@
         android:title="Power">
 
         <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="only_connected"
+            android:defaultValue="false"
+            android:key="run_disconnected"
             android:summary="Some tasks are very intensive and might use a lot of power"
-            android:title="Only run when connected to power" />
+            android:title="Run when disconnected from power" />
     </PreferenceCategory>
 
     <PreferenceCategory
