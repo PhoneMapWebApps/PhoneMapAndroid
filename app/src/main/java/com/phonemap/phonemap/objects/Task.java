@@ -3,9 +3,13 @@ package com.phonemap.phonemap.objects;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
-import android.util.Log;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class Task implements Serializable {
     private final String name;
@@ -66,7 +70,36 @@ public class Task implements Serializable {
     }
 
     public Spanned getCompletedPercentage() {
-        return formatPrefix("Total Progress",  String.valueOf(getCompletedSubtasks() * 100 / getTotalSubtasks()) + "%");
+        return formatPrefix("Total Progress", String.valueOf(getCompletedSubtasks() * 100 / getTotalSubtasks()) + "%");
+    }
+
+    public Spanned getExpectedCompletionTime() {
+        if (completedSubtasks == 0) {
+            return cannotCalculateCompletionTime();
+        }
+
+        Date start, now;
+
+        // ToDo: Get the correct datetime format
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
+        try {
+            start = sdf.parse(toString());
+            now = Calendar.getInstance().getTime();
+        } catch (ParseException ex) {
+            return cannotCalculateCompletionTime();
+        }
+
+        long difference = now.getTime() - start.getTime();
+        double progress = (totalSubtasks - completedSubtasks) / completedSubtasks;
+
+        long completion = (long) (now.getTime() + difference * progress);
+
+        Date expected = new Date(completion);
+        return formatPrefix("Expected completion time", expected.toString());
+    }
+
+    private Spanned cannotCalculateCompletionTime() {
+        return formatPrefix("Expected completion time", "Cannot be calculated due to lack of data, check back later.");
     }
 
     private Spanned formatPrefix(String prefix, String text) {

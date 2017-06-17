@@ -67,11 +67,21 @@
             android:layout_alignParentStart="true" />
 
         <TextView
+            android:id="@+id/completion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/submitted"
+            android:layout_below="@+id/submitted"
+            android:text="Expected completion time: "
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
             android:id="@+id/progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Progress: "
-            android:layout_below="@+id/submitted"
+            android:layout_below="@+id/completion"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentRight="true"

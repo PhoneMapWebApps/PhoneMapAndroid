@@ -40,6 +40,7 @@ public class TaskDescription extends AppCompatActivity {
         ((TextView) findViewById(R.id.author_name)).setText(task.getOwnerFullname());
         ((TextView) findViewById(R.id.organization)).setText(task.getOwnerOrg());
         ((TextView) findViewById(R.id.submitted)).setText(task.getTimeSubmitted());
+        ((TextView) findViewById(R.id.completion)).setText(task.getExpectedCompletionTime());
         ((TextView) findViewById(R.id.progress)).setText(task.getCompletedPercentage());
         ((TextView) findViewById(R.id.description)).setText(task.getDescription());
     }
