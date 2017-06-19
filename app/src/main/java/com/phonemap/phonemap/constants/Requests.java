@@ -3,8 +3,11 @@ package com.phonemap.phonemap.constants;
 public class Requests {
     //End points
     public static final String GET_TASKS = "tasklist";
+    public static final String GET_TASK_PICTURE = "task_pic";
+    public static final String GET_PROFILE_PICTURE = "user_pic";
 
     public static final String TASK_ID = "task_id";
+    public static final String OWNER_ID = "owner_id";
     public static final String FORCE_TASK = "force_task";
     public static final String TASK_NAME = "task_name";
     public static final String TASK_DESCRIPTION = "task_desc";

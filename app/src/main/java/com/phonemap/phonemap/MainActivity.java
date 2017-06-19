@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +17,7 @@ import android.widget.TextView;
 import com.phonemap.phonemap.adapters.TaskListAdapter;
 import com.phonemap.phonemap.constants.Preferences;
 import com.phonemap.phonemap.objects.Task;
-import com.phonemap.phonemap.requests.RequestAPI;
+import com.phonemap.phonemap.requests.ServerAPI;
 import com.phonemap.phonemap.requests.ServerListener;
 
 import net.hockeyapp.android.CrashManager;
@@ -34,7 +35,7 @@ import static com.phonemap.phonemap.services.Utils.startJSRunner;
 
 public class MainActivity extends AppCompatActivity implements ServerListener {
 
-    private final RequestAPI requestAPI = new RequestAPI(this);
+    private final ServerAPI serverAPI = new ServerAPI(this);
     private final String LOG_TAG = "MainActivity";
 
     private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         registerIntentFilter();
         setupUI();
 
-        requestAPI.getTasks();
+        serverAPI.getTasks();
 
         startJSRunner(this);
         checkForUpdates();
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         Intent intent = preferences.getLastIntent();
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
-        requestAPI.getTasks();
+        serverAPI.getTasks();
     }
 
     @Override
@@ -151,12 +152,22 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
         listView.setAdapter(new TaskListAdapter(this, tasks));
     }
 
+    @Override
+    public void gotProfilePicture(Bitmap picture, int task_id) {
+
+    }
+
+    @Override
+    public void gotTaskPicture(Bitmap picture, int task_id) {
+
+    }
+
     private void setCurrentName(String name) {
         TextView task_name = (TextView) findViewById(R.id.currentTaskName);
 
         if (!name.equals(task_name.getText())) {
             task_name.setText(name);
-            requestAPI.getTasks();
+            serverAPI.getTasks();
         }
     }
 

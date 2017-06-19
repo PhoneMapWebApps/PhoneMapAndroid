@@ -1,9 +1,9 @@
 package com.phonemap.phonemap.requests;
 
-public class RequestAPI {
+public class ServerAPI {
     private ServerListener serverListenerContext;
 
-    public RequestAPI(ServerListener context){
+    public ServerAPI(ServerListener context){
         this.serverListenerContext = context;
     }
 

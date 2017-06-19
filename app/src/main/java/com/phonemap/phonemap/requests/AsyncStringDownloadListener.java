@@ -1,6 +1,6 @@
 package com.phonemap.phonemap.requests;
 
 
-interface AsyncTaskListener {
+interface AsyncStringDownloadListener {
     void onStringDownloaded(String str);
 }

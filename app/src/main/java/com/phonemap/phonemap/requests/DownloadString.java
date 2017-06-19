@@ -1,6 +1,5 @@
 package com.phonemap.phonemap.requests;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
@@ -14,9 +13,9 @@ public class DownloadString extends AsyncTask<String, Void, String> {
 
     public static final String LOG_TAG = "DownloadString";
 
-    private AsyncTaskListener callback;
+    private AsyncStringDownloadListener callback;
 
-    public DownloadString(AsyncTaskListener caller){
+    public DownloadString(AsyncStringDownloadListener caller){
         callback = caller;
     }
 

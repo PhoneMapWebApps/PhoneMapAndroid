@@ -17,18 +17,20 @@ import static com.phonemap.phonemap.constants.Other.DATE_FORMAT;
 public class Task implements Serializable {
     private final String name;
     private final String description;
-    private final int id;
+    private final int taskID;
+    private final int ownerID;
     private final int totalSubtasks;
     private final int completedSubtasks;
     private final String ownerFullname;
     private final String ownerOrg;
     private final String timeSubmitted;
 
-    public Task(String name, String description, int id, int totalSubtasks, int completedSubtasks,
-                String ownerFullname, String ownerOrg, String timeSubmitted) {
+    public Task(String name, String description, int taskID, int ownerID, int totalSubtasks,
+                int completedSubtasks, String ownerFullname, String ownerOrg, String timeSubmitted) {
         this.name = name;
         this.description = description;
-        this.id = id;
+        this.taskID = taskID;
+        this.ownerID = ownerID;
         this.totalSubtasks = totalSubtasks;
         this.completedSubtasks = completedSubtasks;
         this.ownerFullname = ownerFullname;
@@ -36,8 +38,8 @@ public class Task implements Serializable {
         this.timeSubmitted = timeSubmitted;
     }
 
-    public int getId() {
-        return id;
+    public int getTaskID() {
+        return taskID;
     }
 
     public String getName() {

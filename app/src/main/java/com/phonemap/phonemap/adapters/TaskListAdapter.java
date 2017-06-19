@@ -7,12 +7,12 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.phonemap.phonemap.R;
 import com.phonemap.phonemap.TaskDescription;
 import com.phonemap.phonemap.objects.Task;
+import com.phonemap.phonemap.requests.GetTaskPicture;
 
 import java.util.List;
 
@@ -66,6 +67,7 @@ public class TaskListAdapter extends BaseAdapter {
             holder.name = (TextView) convertView.findViewById(R.id.name);
             holder.description = (TextView) convertView.findViewById(R.id.description);
             holder.selectTask = (CheckBox) convertView.findViewById(R.id.select_task);
+            holder.view = (ImageView) convertView.findViewById(R.id.imageView);
 
             holder.selectTask.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -117,7 +119,9 @@ public class TaskListAdapter extends BaseAdapter {
 
         holder.name.setText(task.getName());
         holder.description.setText(task.getDescriptionUnformatted());
-        holder.selectTask.setTag(task.getId());
+        holder.selectTask.setTag(task.getTaskID());
+
+        new GetTaskPicture(holder.view, task.getTaskID());
 
         holder.description.post(new Runnable() {
             @Override
@@ -142,7 +146,7 @@ public class TaskListAdapter extends BaseAdapter {
 
         SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
 
-        if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getId()) {
+        if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getTaskID()) {
             holder.selectTask.setChecked(true);
         }
 
@@ -153,5 +157,6 @@ public class TaskListAdapter extends BaseAdapter {
         TextView name;
         TextView description;
         CheckBox selectTask;
+        ImageView view;
     }
 }
