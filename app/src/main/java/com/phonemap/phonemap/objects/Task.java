@@ -106,8 +106,7 @@ public class Task implements Serializable {
     }
 
     private Spanned cannotCalculateCompletionTime() {
-        return formatPrefix("Expected completion time",
-                "Cannot be calculated due to lack of data, check back later.");
+        return formatPrefix("Expected completion time", "N/A");
     }
 
     private Spanned formatPrefix(String prefix, String text) {

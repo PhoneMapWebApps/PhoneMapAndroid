@@ -1,8 +1,10 @@
 package com.phonemap.phonemap;
 
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,9 +21,6 @@ public class TaskDescription extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_description);
 
-        // ToDo: Move activity into a fragment to reduce duplication
-        setupUI();
-
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras == null) {
@@ -34,11 +33,12 @@ public class TaskDescription extends AppCompatActivity {
             task = (Task) savedInstanceState.getSerializable(TASK);
         }
 
+        // ToDo: Move activity into a fragment to reduce duplication
+        setupActionBar(task);
         loadUIWithTask(task);
     }
 
     private void loadUIWithTask(Task task) {
-        ((TextView) findViewById(R.id.task_name)).setText(task.getName());
         ((TextView) findViewById(R.id.author_name)).setText(task.getOwnerFullname());
         ((TextView) findViewById(R.id.organization)).setText(task.getOwnerOrg());
         ((TextView) findViewById(R.id.submitted)).setText(task.getTimeSubmitted());
@@ -50,8 +50,25 @@ public class TaskDescription extends AppCompatActivity {
         new GetProfilePicture(view, task.getOwnerID());
     }
 
-    private void setupUI() {
+    private void setupActionBar(Task task) {
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
+
+        ActionBar bar = getSupportActionBar();
+        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setDisplayShowHomeEnabled(true);
+        bar.setTitle(task.getName());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+
     }
 }

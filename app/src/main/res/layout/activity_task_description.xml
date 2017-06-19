@@ -13,7 +13,10 @@
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 
 
@@ -37,17 +40,9 @@
             android:layout_alignParentStart="true" />
 
         <TextView
-            android:id="@+id/task_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:textAppearance="@android:style/TextAppearance.Holo.WindowTitle" />
-
-        <TextView
             android:id="@+id/author_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/task_name"
             android:layout_marginTop="8dp"
             android:paddingTop="8dp"
             android:text="Author: "
@@ -119,7 +114,6 @@
                 android:layout_alignParentStart="true"
                 android:text="Description: " />
         </ScrollView>
-
     </RelativeLayout>
 
 </RelativeLayout>
