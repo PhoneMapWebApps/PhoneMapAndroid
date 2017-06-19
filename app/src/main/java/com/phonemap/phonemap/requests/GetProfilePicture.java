@@ -16,6 +16,8 @@ public class GetProfilePicture implements  AsyncBitmapDownloadListener {
 
     @Override
     public void onBitmapDownloaded(Bitmap bitmap) {
-        view.setImageBitmap(bitmap);
+        if (bitmap != null) {
+            view.setImageBitmap(bitmap);
+        }
     }
 }

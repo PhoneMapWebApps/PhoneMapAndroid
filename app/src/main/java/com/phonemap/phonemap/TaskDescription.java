@@ -3,9 +3,11 @@ package com.phonemap.phonemap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.objects.Task;
+import com.phonemap.phonemap.requests.GetProfilePicture;
 
 import static com.phonemap.phonemap.constants.Other.TASK;
 
@@ -43,6 +45,9 @@ public class TaskDescription extends AppCompatActivity {
         ((TextView) findViewById(R.id.completion)).setText(task.getExpectedCompletionTime());
         ((TextView) findViewById(R.id.progress)).setText(task.getCompletedPercentage());
         ((TextView) findViewById(R.id.description)).setText(task.getDescription());
+
+        ImageView view = (ImageView) findViewById(R.id.imageView);
+        new GetProfilePicture(view, task.getOwnerID());
     }
 
     private void setupUI() {

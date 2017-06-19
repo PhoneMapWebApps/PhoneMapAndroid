@@ -123,4 +123,8 @@ public class Task implements Serializable {
     private String fixNewLine(String string) {
         return string.replaceAll("\n", "<br />");
     }
+
+    public int getOwnerID() {
+        return ownerID;
+    }
 }

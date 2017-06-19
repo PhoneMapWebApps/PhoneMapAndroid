@@ -26,6 +26,16 @@
         android:layout_below="@id/my_toolbar"
         android:padding="8dp">
 
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginRight="8dp"
+            app:srcCompat="@mipmap/default_picture"
+            android:layout_alignTop="@+id/author_name"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
         <TextView
             android:id="@+id/task_name"
             android:layout_width="wrap_content"
@@ -39,9 +49,12 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_name"
             android:layout_marginTop="8dp"
+            android:paddingTop="8dp"
             android:text="Author: "
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@+id/imageView"
+            android:layout_toEndOf="@+id/imageView" />
 
         <TextView
             android:id="@+id/organization"
@@ -49,20 +62,22 @@
             android:layout_height="wrap_content"
             android:text="Organization: "
             android:layout_below="@+id/author_name"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@+id/imageView"
+            android:layout_toEndOf="@+id/imageView" />
 
         <TextView
             android:id="@+id/submitted"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/organization"
-            android:layout_marginTop="8dp"
+            android:layout_below="@+id/imageView"
+            android:layout_marginTop="16dp"
             android:text="Time submitted: "
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
         <TextView
             android:id="@+id/completion"
@@ -84,18 +99,26 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
 
-        <TextView
-            android:id="@+id/description"
-            android:layout_width="wrap_content"
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Description: "
+            android:fillViewport="true"
+            android:scrollbars="vertical"
             android:layout_below="@+id/progress"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true" />
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentStart="true"
+                android:text="Description: " />
+        </ScrollView>
 
     </RelativeLayout>
 
