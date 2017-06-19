@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -21,7 +20,6 @@ import android.widget.TextView;
 import com.phonemap.phonemap.R;
 import com.phonemap.phonemap.TaskDescription;
 import com.phonemap.phonemap.objects.Task;
-import com.phonemap.phonemap.services.JSRunner;
 
 import java.util.List;
 
@@ -31,7 +29,6 @@ import static com.phonemap.phonemap.constants.Other.TASK;
 import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
 import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
 import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
-import static com.phonemap.phonemap.services.Utils.isServiceRunning;
 import static com.phonemap.phonemap.services.Utils.startJSRunner;
 
 public class TaskListAdapter extends BaseAdapter {
@@ -125,20 +122,20 @@ public class TaskListAdapter extends BaseAdapter {
         holder.description.post(new Runnable() {
             @Override
             public void run() {
-                int lineCount = holder.description.getLayout().getLineCount();
-                int lineEndIndex = holder.description.getLayout().getLineEnd(lineCount - 1);
+                int lineEndIndex = holder.description.getLayout().getLineEnd(2 - 1);
                 String readMore = activity.getString(R.string.read_more);
                 String dots = "... ";
 
-                int offset = lineEndIndex - readMore.length() - dots.length();
+                if (lineEndIndex > readMore.length() + dots.length()) {
+                    int offset = lineEndIndex - readMore.length() - dots.length();
 
-
-                String text = String.valueOf(holder.description.getText().subSequence(0, offset)) + dots;
-                holder.description.setText(text);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>", 0));
-                } else {
-                    holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>"));
+                    String text = String.valueOf(holder.description.getText().subSequence(0, offset)) + dots;
+                    holder.description.setText(text);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>", 0));
+                    } else {
+                        holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>"));
+                    }
                 }
             }
         });

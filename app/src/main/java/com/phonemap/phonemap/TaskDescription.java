@@ -29,7 +29,7 @@ public class TaskDescription extends AppCompatActivity {
                 task = (Task) extras.getSerializable(TASK);
             }
         } else {
-            task= (Task) savedInstanceState.getSerializable(TASK);
+            task = (Task) savedInstanceState.getSerializable(TASK);
         }
 
         loadUIWithTask(task);
