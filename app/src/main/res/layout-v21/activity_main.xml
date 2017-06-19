@@ -20,7 +20,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_below="@id/my_toolbar">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
         <ListView
             android:id="@+id/taskListView"
@@ -32,24 +34,42 @@
             android:id="@+id/footer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:elevation="4dp"
             android:orientation="vertical"
-            android:padding="6sp"
-            android:elevation="4dp">
+            android:padding="6sp">
 
-            <TextView
-                android:id="@+id/currentTaskName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
 
-            <TextView
-                android:id="@+id/currentTaskStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="No task running"
-                android:textSize="12sp"/>
+                <TextView
+                    android:id="@+id/currentTaskName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/currentTaskStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="No task running"
+                    android:layout_below="@+id/currentTaskName"
+                    android:textSize="12sp" />
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleLarge"
+                    android:id="@+id/loading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_gravity="right"
+                    android:visibility="gone"/>
+            </RelativeLayout>
+
         </LinearLayout>
 
     </LinearLayout>

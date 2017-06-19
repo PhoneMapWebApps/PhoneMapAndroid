@@ -31,28 +31,37 @@
             android:layout_height="2dip"
             android:background="@android:color/black" />
 
-        <LinearLayout
-            android:id="@+id/footer"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="6sp">
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
             <TextView
                 android:id="@+id/currentTaskName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/currentTaskStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/no_task_running"
-                android:textSize="12sp"/>
-        </LinearLayout>
+                android:text="No task running"
+                android:layout_below="@+id/currentTaskName"
+                android:textSize="12sp" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:id="@+id/loading"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="right"
+                android:visibility="gone"/>
+        </RelativeLayout>
 
     </LinearLayout>
 

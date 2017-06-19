@@ -11,7 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.adapters.TaskListAdapter;
@@ -44,13 +46,17 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
             if (intent.getAction().equals(JSRUNNER_STARTED_INTENT)) {
                 setCurrentStatus("Executing task.");
                 setCurrentName(intent.getStringExtra(TASK_NAME));
+                setLoading(true);
             } else if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
                 setCurrentStatus("Finished executing task.");
+                setLoading(false);
             } else if (intent.getAction().equals(JSRUNNER_FAILED_EXECUTION)) {
                 setCurrentStatus("Error occurred when executing task! Retrying...");
+                setLoading(false);
             } else if (intent.getAction().equals(NO_TASKS)) {
                 setCurrentStatus("No tasks available.");
                 setCurrentName("");
+                setLoading(false);
             } else if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
                 // ToDo: Have some visual indication that preference has changed
             }
@@ -176,5 +182,15 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     private void setCurrentStatus(String status) {
         TextView currentStatus = (TextView) findViewById(R.id.currentTaskStatus);
         currentStatus.setText(status);
+    }
+
+    private void setLoading(boolean loading) {
+        ProgressBar spinner = (ProgressBar) findViewById(R.id.loading);
+
+        if (loading) {
+            spinner.setVisibility(View.VISIBLE);
+        } else {
+            spinner.setVisibility(View.GONE);
+        }
     }
 }
