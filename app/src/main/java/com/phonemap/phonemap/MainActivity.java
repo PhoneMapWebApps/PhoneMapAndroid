@@ -48,14 +48,15 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
                 setCurrentName(intent.getStringExtra(TASK_NAME));
                 setLoading(true);
             } else if (intent.getAction().equals(JSRUNNER_STOP_INTENT)) {
-                setCurrentStatus("Finished executing task.");
+                setCurrentName("Finished executing task.");
+                setCurrentStatus("");
                 setLoading(false);
             } else if (intent.getAction().equals(JSRUNNER_FAILED_EXECUTION)) {
                 setCurrentStatus("Error occurred when executing task! Retrying...");
                 setLoading(false);
             } else if (intent.getAction().equals(NO_TASKS)) {
-                setCurrentStatus("No tasks available.");
-                setCurrentName("");
+                setCurrentName("No tasks available.");
+                setCurrentStatus("");
                 setLoading(false);
             } else if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
                 // ToDo: Have some visual indication that preference has changed
@@ -158,16 +159,6 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
     public void gotTasks(final List<Task> tasks) {
         final ListView listView = (ListView) findViewById(R.id.taskListView);
         listView.setAdapter(new TaskListAdapter(this, tasks));
-    }
-
-    @Override
-    public void gotProfilePicture(Bitmap picture, int task_id) {
-
-    }
-
-    @Override
-    public void gotTaskPicture(Bitmap picture, int task_id) {
-
     }
 
     private void setCurrentName(String name) {
