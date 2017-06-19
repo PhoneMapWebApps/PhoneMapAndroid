@@ -37,6 +37,11 @@ public class MessengerSender {
     }
 
     public void send() {
+        if (messenger == null) {
+            Log.e(LOG_TAG, "Should not be sending when there is no one to send to");
+            return;
+        }
+
         try {
             messenger.send(message);
         } catch (RemoteException e) {

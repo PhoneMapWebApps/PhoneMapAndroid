@@ -82,7 +82,6 @@ public class TaskListAdapter extends BaseAdapter {
                             activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
                     SharedPreferences.Editor editor = preferences.edit();
 
-
                     if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == (int) holder.selectTask.getTag()) {
                         holder.selectTask.setChecked(false);
                         editor.putInt(CURRENT_TASK, INVALID_TASK_ID);

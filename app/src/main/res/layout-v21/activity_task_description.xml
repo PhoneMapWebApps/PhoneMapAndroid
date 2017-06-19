@@ -99,7 +99,8 @@
             android:fillViewport="true"
             android:scrollbars="vertical"
             android:layout_below="@+id/progress"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="8dp"
+            android:layout_above="@+id/preferredTask">
 
             <TextView
                 android:id="@+id/description"
@@ -112,6 +113,17 @@
                 android:layout_alignParentStart="true"
                 android:text="Description: " />
         </ScrollView>
+
+        <Button
+            android:id="@+id/preferredTask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:text="Select Task" />
     </RelativeLayout>
 
 </RelativeLayout>

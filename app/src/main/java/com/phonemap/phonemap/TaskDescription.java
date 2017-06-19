@@ -1,19 +1,32 @@
 package com.phonemap.phonemap;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.phonemap.phonemap.objects.Task;
 import com.phonemap.phonemap.requests.GetProfilePicture;
 
+import static com.phonemap.phonemap.constants.Intents.UPDATED_PREFERRED_TASK;
 import static com.phonemap.phonemap.constants.Other.TASK;
+import static com.phonemap.phonemap.constants.Preferences.CURRENT_TASK;
+import static com.phonemap.phonemap.constants.Preferences.INVALID_TASK_ID;
+import static com.phonemap.phonemap.constants.Preferences.PREFERENCES;
+import static com.phonemap.phonemap.services.Utils.startJSRunner;
 
 public class TaskDescription extends AppCompatActivity {
+    public static final String LOG_TAG = "TaskDescription";
+
     private Task task;
 
     @Override
@@ -38,7 +51,7 @@ public class TaskDescription extends AppCompatActivity {
         loadUIWithTask(task);
     }
 
-    private void loadUIWithTask(Task task) {
+    private void loadUIWithTask(final Task task) {
         ((TextView) findViewById(R.id.author_name)).setText(task.getOwnerFullname());
         ((TextView) findViewById(R.id.organization)).setText(task.getOwnerOrg());
         ((TextView) findViewById(R.id.submitted)).setText(task.getTimeSubmitted());
@@ -48,6 +61,38 @@ public class TaskDescription extends AppCompatActivity {
 
         ImageView view = (ImageView) findViewById(R.id.imageView);
         new GetProfilePicture(view, task.getOwnerID());
+
+        SharedPreferences preferences = getApplicationContext()
+                .getSharedPreferences(PREFERENCES, MODE_PRIVATE);
+
+        final Button button = ((Button) findViewById(R.id.preferredTask));
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences preferences =
+                        getApplication().getSharedPreferences(PREFERENCES, MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+
+                if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getTaskID()) {
+                    button.setText(getString(R.string.select_task));
+                    editor.putInt(CURRENT_TASK, INVALID_TASK_ID);
+                    editor.apply();
+                } else {
+                    button.setText(getString(R.string.preferred_task));
+                    editor.putInt(CURRENT_TASK, task.getTaskID());
+                    editor.apply();
+
+                    startJSRunner(getApplication());
+                }
+
+                Intent intent = new Intent(UPDATED_PREFERRED_TASK);
+                LocalBroadcastManager.getInstance(getApplication()).sendBroadcast(intent);
+            }
+        });
+
+        if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getTaskID()) {
+            button.setText(getString(R.string.preferred_task));
+        }
     }
 
     private void setupActionBar(Task task) {
@@ -55,9 +100,14 @@ public class TaskDescription extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
-        bar.setTitle(task.getName());
+
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            bar.setDisplayShowHomeEnabled(true);
+            bar.setTitle(task.getName());
+        } else {
+            Log.e(LOG_TAG, "Could not find action bar");
+        }
     }
 
     @Override

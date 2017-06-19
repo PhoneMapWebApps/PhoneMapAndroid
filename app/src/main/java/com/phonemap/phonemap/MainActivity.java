@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
+            case R.id.action_refresh:
+                serverAPI.getTasks();
             default:
                 return super.onOptionsItemSelected(item);
 
