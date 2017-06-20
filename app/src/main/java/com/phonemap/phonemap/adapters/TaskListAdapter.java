@@ -66,39 +66,7 @@ public class TaskListAdapter extends BaseAdapter {
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.name);
             holder.description = (TextView) convertView.findViewById(R.id.description);
-            holder.selectTask = (CheckBox) convertView.findViewById(R.id.select_task);
             holder.view = (ImageView) convertView.findViewById(R.id.imageView);
-
-            holder.selectTask.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    for (int i = 0; i < listView.getChildCount(); i++) {
-                        RelativeLayout layout = (RelativeLayout) listView.getChildAt(i);
-                        CheckBox checkBox = (CheckBox) layout.findViewById(R.id.select_task);
-                        checkBox.setChecked(false);
-                    }
-
-                    SharedPreferences preferences =
-                            activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-
-                    if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == (int) holder.selectTask.getTag()) {
-                        holder.selectTask.setChecked(false);
-                        editor.putInt(CURRENT_TASK, INVALID_TASK_ID);
-                        editor.apply();
-                    } else {
-                        holder.selectTask.setChecked(true);
-                        editor.putInt(CURRENT_TASK, (int) holder.selectTask.getTag());
-                        editor.apply();
-
-                        startJSRunner(activity);
-                    }
-
-                    Intent intent = new Intent(UPDATED_PREFERRED_TASK);
-                    LocalBroadcastManager.getInstance(activity).sendBroadcast(intent);
-
-                }
-            });
 
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -118,7 +86,6 @@ public class TaskListAdapter extends BaseAdapter {
 
         holder.name.setText(task.getName());
         holder.description.setText(task.getDescriptionUnformatted());
-        holder.selectTask.setTag(task.getTaskID());
 
         new GetTaskPicture(holder.view, task.getTaskID());
 
@@ -146,7 +113,7 @@ public class TaskListAdapter extends BaseAdapter {
         SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES, MODE_PRIVATE);
 
         if (preferences.getInt(CURRENT_TASK, INVALID_TASK_ID) == task.getTaskID()) {
-            holder.selectTask.setChecked(true);
+            holder.name.setText(Html.fromHtml("<font color='#006400'>Preferred: </font>" + holder.name.getText()));
         }
 
         return convertView;
@@ -155,7 +122,6 @@ public class TaskListAdapter extends BaseAdapter {
     private static class ViewHolder {
         TextView name;
         TextView description;
-        CheckBox selectTask;
         ImageView view;
     }
 }

@@ -15,11 +15,18 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Check the checkbox for the task you want to endorse."
+        android:layout_below="@+id/my_toolbar"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_below="@+id/my_toolbar">
+        android:layout_below="@+id/info">
 
         <ListView
             android:id="@+id/taskListView"
