@@ -172,7 +172,9 @@ public class JSRunner extends Service {
         super.onDestroy();
 
         if (service != null) {
-            service.emit(ON_DESTROY, true);
+            //ToDo: Check why emitting freezes the app
+            //service.emit(ON_DESTROY, true);
+            service.getProcess().exit(1);
         }
 
         unbindService(connection);
