@@ -4,6 +4,7 @@ import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.format.DateFormat;
+import android.util.Log;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -96,10 +97,11 @@ public class Task implements Serializable {
         }
 
         long difference = now.getTime() - start.getTime();
-        double progress = ((double) (totalSubtasks - completedSubtasks)) / ((double) totalSubtasks);
+        double progress = ((double) getCompletedSubtasks()) / ((double) getTotalSubtasks());
+        double notCompleted = 1 - progress;
 
-        long completion = (long) (now.getTime() + difference * progress);
-
+        long completion = (long) (now.getTime() + difference * (notCompleted / progress));
+        
         Date expected = new Date(completion);
         String formatted = String.valueOf(DateFormat.format(DATE_FORMAT, expected));
         return formatPrefix("Expected completion time", formatted);
