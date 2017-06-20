@@ -1,5 +1,6 @@
 package com.phonemap.phonemap;
 
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,7 +12,9 @@ import android.widget.Toast;
 
 import com.phonemap.phonemap.services.JSRunner;
 
+import static com.phonemap.phonemap.constants.Intents.JSRUNNER_STOP_INTENT;
 import static com.phonemap.phonemap.constants.Intents.PREFERENCES_CHANGED;
+import static com.phonemap.phonemap.services.JSRunner.broadcastState;
 import static com.phonemap.phonemap.services.Utils.isServiceRunning;
 
 public class SettingsActivity extends PreferenceActivity {
@@ -40,6 +43,7 @@ public class SettingsActivity extends PreferenceActivity {
                         Toast.makeText(getActivity(),
                                 "All background processes have been destroyed",
                                 Toast.LENGTH_SHORT).show();
+                        broadcastState(getActivity(), new Intent(JSRUNNER_STOP_INTENT));
                     } else {
                         Toast.makeText(getActivity(),
                                 "No background process is running",

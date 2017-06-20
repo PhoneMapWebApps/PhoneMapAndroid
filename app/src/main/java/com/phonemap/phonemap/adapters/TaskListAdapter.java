@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,7 +83,7 @@ public class TaskListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Task task = tasks.get(position);
+        final Task task = tasks.get(position);
 
         holder.name.setText(task.getName());
         holder.description.setText(task.getDescriptionUnformatted());
@@ -99,12 +100,19 @@ public class TaskListAdapter extends BaseAdapter {
                 if (lineEndIndex > readMore.length() + dots.length()) {
                     int offset = lineEndIndex - readMore.length() - dots.length();
 
-                    String text = String.valueOf(holder.description.getText().subSequence(0, offset)) + dots;
-                    holder.description.setText(text);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>", 0));
+                    String visibleText = String.valueOf(holder.description.getText().subSequence(0, lineEndIndex));
+
+                    if (visibleText.length() < task.getDescriptionUnformatted().length()) {
+                        String trimmed = String.valueOf(holder.description.getText().subSequence(0, offset));
+                        String text = trimmed + dots;
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>", 0));
+                        } else {
+                            holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>"));
+                        }
                     } else {
-                        holder.description.setText(Html.fromHtml(text + "<font color=blue>" + readMore + "</font>"));
+                        holder.description.setText(Html.fromHtml(visibleText + " <font color=blue>" + readMore + "</font>"));
                     }
                 }
             }

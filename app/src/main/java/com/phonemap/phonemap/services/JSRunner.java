@@ -15,9 +15,11 @@ import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.phonemap.phonemap.constants.Phone;
 import com.phonemap.phonemap.constants.Preferences;
+import com.phonemap.phonemap.constants.Sockets;
 
 import org.json.JSONObject;
 import org.liquidplayer.service.MicroService;
@@ -104,7 +106,7 @@ public class JSRunner extends Service {
     private final ServiceExitListener exitListener = new ServiceExitListener() {
         @Override
         public void onExit(MicroService service, Integer exitCode) {
-            broadcastState(new Intent(JSRUNNER_STOP_INTENT));
+            broadcastState(getApplication(), new Intent(JSRUNNER_STOP_INTENT));
             serviceRunning = false;
             requestNewSubtask();
         }
@@ -125,7 +127,7 @@ public class JSRunner extends Service {
             messengerSender.setMessage(FAILED_EXECUTING_CODE).setData(bundle).send();
             requestNewSubtask();
 
-            broadcastState(new Intent(JSRUNNER_FAILED_EXECUTION));
+            broadcastState(getApplication(), new Intent(JSRUNNER_FAILED_EXECUTION));
         }
     };
 
@@ -174,6 +176,7 @@ public class JSRunner extends Service {
         if (service != null) {
             //ToDo: Check why emitting freezes the app
             //service.emit(ON_DESTROY, true);
+            messengerSender.setMessage(Sockets.ON_DESTROY).send();
             service.getProcess().exit(1);
         }
 
@@ -225,7 +228,7 @@ public class JSRunner extends Service {
         Intent intent = new Intent(JSRUNNER_STARTED_INTENT);
         intent.putExtra(TASK_NAME, task_name);
 
-        broadcastState(intent);
+        broadcastState(getApplication(), intent);
     }
 
     public void setMessengerSender(MessengerSender messengerSender) {
@@ -249,12 +252,12 @@ public class JSRunner extends Service {
         return new URI(FILE_PREFIX + path);
     }
 
-    private void broadcastState(Intent intent) {
-        Preferences preferences = new Preferences(getApplicationContext());
+    public static void broadcastState(Context context, Intent intent) {
+        Preferences preferences = new Preferences(context);
         preferences.saveIntent(intent);
 
         LocalBroadcastManager
-                .getInstance(getApplicationContext())
+                .getInstance(context)
                 .sendBroadcast(intent);
     }
 }

@@ -42,6 +42,7 @@ import static com.phonemap.phonemap.constants.Sockets.ID;
 import static com.phonemap.phonemap.constants.Sockets.NEW_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.NEW_TASK;
 import static com.phonemap.phonemap.constants.Sockets.NO_TASKS;
+import static com.phonemap.phonemap.constants.Sockets.ON_DESTROY;
 import static com.phonemap.phonemap.constants.Sockets.PATH;
 import static com.phonemap.phonemap.constants.Sockets.REQUEST_NEW_SUBTASK;
 import static com.phonemap.phonemap.constants.Sockets.RESULT;
@@ -116,6 +117,9 @@ public class SocketConnectionManager extends Service {
                 case FAILED_EXECUTING_CODE:
                     SocketConnectionManager.this.sendToServer(EXECUTION_FAILED, message);
                     break;
+                case ON_DESTROY:
+                    disconnect();
+                    break;
                 default:
                     super.handleMessage(message);
             }
@@ -186,6 +190,10 @@ public class SocketConnectionManager extends Service {
         }
 
         requestMoreWork();
+    }
+
+    public void disconnect() {
+        this.socket.disconnect();
     }
 
     @Nullable

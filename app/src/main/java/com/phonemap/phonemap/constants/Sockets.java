@@ -23,6 +23,7 @@ public class Sockets {
     public static final int NEW_SUBTASK = 0;
     public static final int COMPLETED_SUBTASK = 1;
     public static final int NEW_TASK = 2;
+    public static final int ON_DESTROY = 3;
 
     public static final int FAILED_EXECUTING_CODE = 400;
 
