@@ -54,9 +54,11 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
             } else if (intent.getAction().equals(JSRUNNER_FAILED_EXECUTION)) {
                 setCurrentStatus("Error occurred when executing task! Retrying...");
                 setLoading(false);
+                serverAPI.getTasks();
             } else if (intent.getAction().equals(NO_TASKS)) {
                 setCurrentName("No tasks available.");
                 setCurrentStatus("");
+                serverAPI.getTasks();
                 setLoading(false);
             } else if (intent.getAction().equals(UPDATED_PREFERRED_TASK)) {
                 // ToDo: Have some visual indication that preference has changed
