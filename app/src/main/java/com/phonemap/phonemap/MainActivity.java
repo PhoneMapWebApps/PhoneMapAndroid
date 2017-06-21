@@ -163,11 +163,7 @@ public class MainActivity extends AppCompatActivity implements ServerListener {
 
     private void setCurrentName(String name) {
         TextView task_name = (TextView) findViewById(R.id.currentTaskName);
-
-        if (!name.equals(task_name.getText())) {
-            task_name.setText(name);
-            serverAPI.getTasks();
-        }
+        task_name.setText(name);
     }
 
     private void setCurrentStatus(String status) {
